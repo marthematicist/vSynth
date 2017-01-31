@@ -1,4 +1,3 @@
-PGraphics drawBuffer;
 
 color bgColor = color( 0 , 0 , 0 , 255 );
 float blockAlpha = 255;
@@ -21,5 +20,3 @@ ChannelLoop C;
 Loop L;
 
 int RAnum = 40;
-
-Scene00 S00;

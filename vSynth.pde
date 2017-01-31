@@ -12,8 +12,7 @@ float d;
 
 
 void setup() {
-  size( 1280, 800, P2D );
-  drawBuffer = createGraphics( 1280, 800, P2D );
+  size( 800, 480 );
 
   xRes = float(width);
   yRes = float(height);
@@ -23,9 +22,6 @@ void setup() {
 
   M = new Metronome();
   L = loopSetup( M );
-  C = new ChannelLoop( M , "OnOff" );
-  S00 = new Scene00( drawBuffer, M, xRes, yRes );
-  // c = new Client( this, "192.168.0.104", 12345 );
 }
 
 
@@ -42,7 +38,7 @@ void draw() {
   // draw
   background(0, 0, 0 );
   //M.draw();
-  L.drawMin( t , 50 , 50 , mouseX , mouseY , 0.1 );
+  L.drawMin( t , 0 , 0 , xRes , yRes , 0.1 );
   //println( C.print() );
   
 }
