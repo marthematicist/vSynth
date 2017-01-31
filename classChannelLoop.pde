@@ -124,7 +124,7 @@ class ChannelLoop {
       for( int i = 0 ; i < events.size() ; i++ ) {
         // get t1, measureTime for the event
         float t1 = events.get(i).t;
-        float t2 = events.get(i).t+0.0625;
+        float t2 = events.get(i).t+0.02;
         if( t2 > 1 ) { t2 = 1; }
         // set the event color
         if( this.on ) { stroke( this.fillColorOn ); } 
@@ -185,7 +185,9 @@ class ChannelLoop {
   //       t: system time of evolution (int)
   ///////////////////////////////////////////////////////////////////////////////
   void triggerInput( int t ) {
-    inputTriggered = true;
+    if( t > inputClearTime + 30 ) {
+      inputTriggered = true;
+    }
     inputTriggerTime = t;
   } // end of METHOD: triggerInput /////////////////////////////////////////////  
   
@@ -196,7 +198,9 @@ class ChannelLoop {
   //       t: system time of evolution (int)
   ///////////////////////////////////////////////////////////////////////////////
   void clearInput( int t ) {
-    inputCleared = true;
+    if( t > inputTriggerTime + 30 ) {
+      inputCleared = true;
+    }
     inputClearTime = t;
   } // end of METHOD: clearInput /////////////////////////////////////////////
   
@@ -245,7 +249,7 @@ class ChannelLoop {
             // insert new On event at inputTriggerTime
             addEvent( true , t );
             // insert new Off event immediately after inputTriggerTime
-            addEvent( false , (t + 0.000001) );
+            addEvent( false , (t + 0.00001) );
           }
           
           // check status of inputCleared
@@ -254,7 +258,7 @@ class ChannelLoop {
             // clear inputOn
             inputOn = false;
             // insert new Off event at inputClearTime
-            addEvent( false , (t + 0.000001) );
+            addEvent( false , (t + 0.00001) );
             // clean up event list
             cleanup();
           }
@@ -263,10 +267,10 @@ class ChannelLoop {
           if( inputOn ) {
             // input is on
             // check whether next event is On
-            if( true ) {
+            if( nextEvent( t ).on ) {
               // next event is On
               // insert a new Off event at this measure time
-              addEvent( false , t + 0.000001 );
+              addEvent( false , t + 0.00001 );
             }
             // check status of inputTriggered
             if( !inputTriggered ) {
