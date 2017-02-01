@@ -1,4 +1,8 @@
-//import processing.net.*;
+import processing.net.*;
+Server s;
+String input;
+int data[];
+
 
 //Client c;
 //String input;
@@ -9,6 +13,8 @@ float yRes;
 float xC;
 float yC;
 float d;
+
+float mtLast = 0;
 
 
 void setup() {
@@ -22,6 +28,7 @@ void setup() {
 
   M = new Metronome();
   L = loopSetup( M );
+  s = new Server(this, 12345);
 }
 
 
@@ -29,11 +36,20 @@ void draw() {
 
   // get the current time
   int t = millis();
+  float mt = M.measureTime(t);
   // evolve the metronome
   M.evolve( t );
   // evolve the ChannelLoop
   L.evolve( t );
-  //println( "done evolving ChannelLoop" );
+  
+  // get events from Loop
+  ArrayList<Event> events = L.getEvents( mtLast , mt );
+  // send all events to client
+  for( int i = 0 ; i < events.size() ; i ++ ) {
+    println( events.get(i).print() );
+    s.write( events.get(i).sendData() );
+  }
+    
 
   // draw
   background(0, 0, 0 );
@@ -41,4 +57,5 @@ void draw() {
   L.drawMin( t , 0 , 0 , xRes , yRes , 0.1 );
   //println( C.print() );
   
+  mtLast = mt;
 }

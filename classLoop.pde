@@ -19,7 +19,47 @@ class Loop {
     this.M = Min;
     this.cursorColor = cursorColorIn;
   }
-
+  
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: getEvents                                                       
+  //     Returns an ArrayList<Event> of Events in an interval (t1, t2] (in measure time)
+  //     arguments:
+  //       t1: measure time at start of interval
+  //       t2: measure time at end of interval
+  ///////////////////////////////////////////////////////////////////////////////
+  ArrayList<Event> getEvents( float t1 , float t2 ) {
+    // create an arrayList of ArrayList<Events> to store events for all channels
+    ArrayList<ArrayList<Event>> allEvents = new ArrayList<ArrayList<Event>>(numChannels);
+    // fill the meta-ArrayList, and calculate the total number of events N
+    int N = 0;
+    for( int i = 0 ; i < numChannels ; i++ ) {
+      allEvents.add( i , cl[i].getEvents( t1 , t2 ) );
+      N += allEvents.get(i).size();
+    }
+    // create an empty ArrayList to hold all Events
+    ArrayList<Event> output = new ArrayList<Event>();
+    // loop through all events and store them, in order
+    // This loop should remove one element per iteration
+    for( int n = 0 ; n < N ; n++ ) {
+      float lowestTime = 100;
+      int lowestTimeChannel = 0;
+      // loop through all channels, and compare the first event's time to lowestTime
+      for( int i = 0 ; i < numChannels ; i++ ) {
+        if( allEvents.get(i).size() > 0 ) {
+          if( allEvents.get(i).get(0).t <= lowestTime ) {
+            lowestTime =  allEvents.get(i).get(0).t;
+            lowestTimeChannel = i;
+          }
+        }
+      }
+      // lowestTimeChannel now contains the channel of the earliest remaining Event
+      // append the Event to the output List
+      output.add( allEvents.get(lowestTimeChannel).get(0).clone() );
+      // remove the Event from its channel
+      allEvents.get(lowestTimeChannel).remove(0);
+    }
+    return output;
+  }
   
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: drawMin                                                       

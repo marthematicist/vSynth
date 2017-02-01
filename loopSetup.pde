@@ -6,7 +6,7 @@ Loop loopSetup( Metronome Min) {
   Loop Lout = new Loop( numChannels , Min , cursorColor );
   
   // set type
-  String[] types = { "OnOff" , "OnOff" , "OneTime" , "OneTime" , "OnOff" , "OnOff" , "OneTime" , "OneTime" };
+  String[] types = { "OnOff" , "OnOff" , "OnOff" , "OneTime" , "OnOff" , "OnOff" , "OneTime" , "OneTime" };
   
   // set parameters
   for( int i = 0 ; i < numChannels ; i++ ) {
@@ -20,6 +20,7 @@ Loop loopSetup( Metronome Min) {
     
     Lout.cl[i] = createChannelLoop(  Min ,      // Metronome
                                   type,       // type
+                                  i,          // channel
                                   lineColorOn,  // colors
                                   lineColorOff,
                                   bgColorOn,

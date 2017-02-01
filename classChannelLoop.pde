@@ -8,6 +8,7 @@ class ChannelLoop {
   // FIELDS ///////////////////////////////////////////////////////////////////////
   String type;                        // type of ChannelLoop ("OnOff" or "OneTime")
   Metronome M;                        // Metronome class instance associated with this ChannelLoop
+  int ch;                             // channel
   ArrayList<Event> events;            // List of Events
   boolean inputOn;                    // Is input on?
                                       //   set and cleared in evolve
@@ -37,9 +38,10 @@ class ChannelLoop {
   color fillColorOff;                 // color of fill in draw box (when off)
   
   // CONSTRUCTOR ////////////////////////////////////////////////////////////////
-  ChannelLoop( Metronome Min , String typeIn ) {
+  ChannelLoop( Metronome Min , String typeIn , int chIn) {
     this.type = typeIn;
     this.M = Min;
+    this.ch = chIn;
     this.events = new ArrayList<Event>();
     this.inputOn = false;
     this.inputTriggered = false;
@@ -59,9 +61,31 @@ class ChannelLoop {
     this.fillColorOff = color( 128 , 128 , 128 );
   }  // end of CONSTRUCTOR
   
-
   
- 
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: getEvents                                                       
+  //     Returns an ArrayList<Event> of Events in an interval (t1, t2] (in measure time)
+  //     arguments:
+  //       t1: measure time at start of interval
+  //       t2: measure time at end of interval
+  ///////////////////////////////////////////////////////////////////////////////
+  ArrayList<Event> getEvents( float t1 , float t2 ) {
+    // does the interval wrap from front to back of loop?
+    boolean wraps = false;
+    // create an empty ArrayList
+    ArrayList<Event> output = new ArrayList<Event>();
+    if( t1 > t2 ) { wraps = true; }
+    // parse through all Events, and add them to the List if they are in the interval
+    for( int i = 0 ; i < events.size() ; i++ ) {
+      // get time of event
+      float te = events.get(i).t;
+      if( on && ( ( !wraps && ( (t1 < te) && (te <= t2) ) ) || ( wraps && ( (te <= t2) || (t1 < te) ) ) ) ) {
+        output.add( events.get(i).clone() );
+      }
+    }
+    return output;
+  }
+   
   
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: drawMin                                                       
@@ -249,7 +273,7 @@ class ChannelLoop {
             // insert new On event at inputTriggerTime
             addEvent( true , t );
             // insert new Off event immediately after inputTriggerTime
-            addEvent( false , (t + 0.00001) );
+            addEvent( false , (t + 0.00001)%1 );
           }
           
           // check status of inputCleared
@@ -258,7 +282,7 @@ class ChannelLoop {
             // clear inputOn
             inputOn = false;
             // insert new Off event at inputClearTime
-            addEvent( false , (t + 0.00001) );
+            addEvent( false , (t + 0.00001)%1 );
             // clean up event list
             cleanup();
           }
@@ -270,7 +294,7 @@ class ChannelLoop {
             if( nextEvent( t ).on ) {
               // next event is On
               // insert a new Off event at this measure time
-              addEvent( false , t + 0.00001 );
+              addEvent( false , (t + 0.00001)%1 );
             }
             // check status of inputTriggered
             if( !inputTriggered ) {
@@ -456,32 +480,32 @@ class ChannelLoop {
     float t = tIn % 1;
     // if the event list is empty, add to list position 0
     if( events.size() == 0 ) {
-      events.add( 0 , new Event( onIn , t ) );
+      events.add( 0 , new Event( type , onIn , t , ch ) );
     } else {
       // if the arrayList is not empty...
       // if the arraylist has only one Event, add this Event before or after, as appropriate
       if( events.size() == 1 ) {
         if( t < events.get(0).t ) {
-          events.add( 0 , new Event( onIn , t ) );
+          events.add( 0 , new Event( type , onIn , t , ch ) );
         } else if( t > events.get(0).t ) {
-          events.add( 1 , new Event( onIn , t ) );
+          events.add( 1 , new Event( type , onIn , t , ch ) );
         }
       } else {
         // the event list must have more than one entry
         // check if new Event belongs at the beginning
         if( tIn < events.get(0).t ) {
-          events.add( 0 , new Event( onIn , t ) );
+          events.add( 0 , new Event( type,  onIn , t , ch ) );
         }
         // check if new Event belongs at the end
         else if( tIn > events.get( events.size() - 1 ).t ) {
-          events.add( events.size() , new Event( onIn , t ) );
+          events.add( events.size() , new Event( type , onIn , t , ch ) );
         }
         else {
           // the event belongs somewhere in the middle of the list
           for( int i = 0 ; i < events.size() - 1 ; i++ ) {
             // parse through consecutive pairs, and find where the event belongs
             if( tIn > events.get(i).t && tIn < events.get(i+1).t ) {
-              events.add( i+1 ,  new Event( onIn , t ) );
+              events.add( i+1 ,  new Event( type , onIn , t , ch ) );
             }
           }
         }
@@ -499,6 +523,7 @@ class ChannelLoop {
 // createChannelLoop
 ChannelLoop createChannelLoop(  Metronome Min ,      // Metronome
                                 String typeIn,       // type
+                                int chIn,            // channel
                                 color lineColorOnIn,  // colors
                                 color lineColorOffIn,
                                 color bgColorOnIn,
@@ -506,7 +531,7 @@ ChannelLoop createChannelLoop(  Metronome Min ,      // Metronome
                                 color fillColorOnIn,
                                 color fillColorOffIn
                                 ) {
-  ChannelLoop clOut =  new ChannelLoop( Min , typeIn );
+  ChannelLoop clOut =  new ChannelLoop( Min , typeIn , chIn );
   clOut.lineColorOn = lineColorOnIn;
   clOut.lineColorOff = lineColorOffIn;
   clOut.bgColorOn = bgColorOnIn;
@@ -518,6 +543,7 @@ ChannelLoop createChannelLoop(  Metronome Min ,      // Metronome
 
 // createOnOffChannelLoop
 ChannelLoop createOnOffChannelLoop( Metronome Min ,      // Metronome
+                                    int chIn,
                                     color lineColorOnIn,
                                     color lineColorOffIn,
                                     color bgColorOnIn,
@@ -525,7 +551,7 @@ ChannelLoop createOnOffChannelLoop( Metronome Min ,      // Metronome
                                     color fillColorOnIn,
                                     color fillColorOffIn
                                     ) {
-  ChannelLoop clOut =  new ChannelLoop( Min , "OneTime" );
+  ChannelLoop clOut =  new ChannelLoop( Min , "OneTime" , chIn );
   clOut.lineColorOn = lineColorOnIn;
   clOut.lineColorOff = lineColorOffIn;
   clOut.bgColorOn = bgColorOnIn;
@@ -536,6 +562,7 @@ ChannelLoop createOnOffChannelLoop( Metronome Min ,      // Metronome
 }
 // createOneTimeChannelLoop
 ChannelLoop createOneTimeChannelLoop( Metronome Min ,      // Metronome
+                                    int chIn,
                                     color lineColorOnIn,
                                     color lineColorOffIn,
                                     color bgColorOnIn,
@@ -543,7 +570,7 @@ ChannelLoop createOneTimeChannelLoop( Metronome Min ,      // Metronome
                                     color fillColorOnIn,
                                     color fillColorOffIn
                                     ) {
-  ChannelLoop clOut =  new ChannelLoop( Min , "OneTime" );
+  ChannelLoop clOut =  new ChannelLoop( Min , "OneTime" , chIn );
   clOut.lineColorOn = lineColorOnIn;
   clOut.lineColorOff = lineColorOffIn;
   clOut.bgColorOn = bgColorOnIn;
@@ -551,24 +578,4 @@ ChannelLoop createOneTimeChannelLoop( Metronome Min ,      // Metronome
   clOut.fillColorOn = fillColorOnIn;
   clOut.fillColorOff = fillColorOffIn;
   return clOut;
-}
-
-
-
-
-
-//////////////////////////////////////////////
-// Clss: Event ///////////////////////////////
-//////////////////////////////////////////////
-
-class Event {
-  // FIELDS //////////////////////////////////
-  boolean on;            // is Event on-type?
-  float t;               // time of event
-  
-  // CONSTRUCTOR /////////////////////////////
-  Event( boolean onIn , float tIn ) {
-    this.on = onIn;
-    this.t = tIn;
-  }
 }
