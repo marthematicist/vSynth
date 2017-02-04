@@ -28,6 +28,8 @@ void setup() {
 
   M = new Metronome();
   L = loopSetup( M );
+  OH = new OutputHandler( M , L );
+  IH = new InputHandler( M , L  , OH);
   s = new Server(this, 12345);
 }
 
@@ -43,12 +45,16 @@ void draw() {
   L.evolve( t );
   
   // get events from Loop
-  ArrayList<Event> events = L.getEvents( mtLast , mt );
+  // ArrayList<Event> events = L.getEvents( mtLast , mt );
   // send all events to client
+  OH.sendAllEvents( s );
+  /*
   for( int i = 0 ; i < events.size() ; i ++ ) {
-    println( events.get(i).print() );
+    println( millis() + "      " + events.get(i).sendData() );
     s.write( events.get(i).sendData() );
   }
+  */
+  
     
 
   // draw
@@ -56,6 +62,13 @@ void draw() {
   //M.draw();
   L.drawMin( t , 0 , 0 , xRes , yRes , 0.1 );
   //println( C.print() );
-  
   mtLast = mt;
+}
+
+
+void keyPressed() {
+  IH.recieveInput( keyCode ,  true );
+}
+void keyReleased() {
+  IH.recieveInput( keyCode ,  false );
 }

@@ -18,5 +18,7 @@ boolean beatTriggered = false;
 Metronome M;
 ChannelLoop C;
 Loop L;
+InputHandler IH;
+OutputHandler OH;
 
 int RAnum = 40;

@@ -15,8 +15,13 @@ class Metronome {
   float maxNextInput;          // latest time next input will be accepted (if beatEstablished)
   float inputThreshold;        // portion of measureLength before and after next predicted beat where input is accepted
   int measureCount;            // number of measures since beatEstablished
-  int beat;
-  float measureRatio;
+  int beat;                    // beat [0-3]
+  float measureRatio;          // time in measure [0-1)
+  boolean inputTriggered;      // flag that input has been triggered. Set in triggerInput and cleared in evolve.
+  int inputTriggerTime;         // system time (ms) of last input trigger
+  boolean resetTriggered;      // flag that reset has been triggered. Set in triggerReset and cleared in evolve
+  int resetTriggerTime;        // system time (ms) of last reset trigger
+  
   // constructor
   Metronome ( ) {
     this.isOn = true;
@@ -36,6 +41,10 @@ class Metronome {
     this.beat = 0;
     this.measureCount = 0;
     this.measureRatio = 0;
+    this.inputTriggered = false;
+    this.inputTriggerTime = 0;
+    this.resetTriggered = false;
+    this.resetTriggerTime = 0;
     println( "mentronome initialized..." );
   }
   
@@ -54,60 +63,92 @@ class Metronome {
   }
   
   void evolve ( int t ) {
+    
+    // input trigger handler
+    if( inputTriggered ) {
+      // tt is input trigger time
+      int tt = inputTriggerTime;
+      // if the beat is not yet established
+      if( !this.beatEstablished || !this.newBeatReady ) {
+        // if the input string is empty
+        if( !beatInitialized ) {
+          beatInitialized = true;
+          println( "beat sync starting..." );
+        } else {
+          // else input string has 1 measure
+          // include measure length in rolling average
+          this.RA.addEntry( tt - this.lastInputTime );
+          // compute measure length
+          this.measureLength = this.RA.ravg();
+          // beat has been established
+          this.beatEstablished = true;
+          this.newBeatReady = true;
+          // sync the beat
+          this.sync( tt );
+          // set threshold for next input
+          this.minNextInput = tt + this.measureLength*( 1 - this.inputThreshold );
+          this.maxNextInput = tt + this.measureLength*( 1 + this.inputThreshold );
+          println( "Beat established. BMP = " + 60000/(this.measureLength*0.25) );
+        }
+      } else {
+        // otherwise, beat has been established
+        // if the current input time is within threshold...
+        if( tt > this.minNextInput && tt < this.maxNextInput ) {
+          // include measure length in rolling average
+          this.RA.addEntry( tt - this.lastInputTime );
+          // compute measure length
+          this.measureLength = this.RA.ravg();
+          println( "Beat modified.  BMP = " + 60000/(this.measureLength*0.25) + " ; num data points: " + this.RA.N );
+        } 
+        // set threshold for next input
+        this.minNextInput = tt + this.measureLength*( 1 - this.inputThreshold );
+        this.maxNextInput = tt + this.measureLength*( 1 + this.inputThreshold );
+      }
+      // set lastInputTime
+      this.lastInputTime = tt;
+      this.sync( tt );
+    } // end of input trigger handler
+    
+    // reset trigger handler
+    if( resetTriggered ) {
+      this.isOn = true;
+      this.newBeatReady = false;
+      this.beatInitialized = false;
+      this.RA = new RollingAverageInt( RAnum );
+      this.lastInputTime = 0;
+      this.minNextInput = 0;
+      this.maxNextInput = 999999999;
+      println( "resetting beat..." );
+    } // end of reset trigger handler
+    
+    
+    // check for end of measure, and update measureStartTime and measureEndTime if so
     if( this.beatEstablished && float(t) > this.measureEndTime) {
       this.measureStartTime = this.measureEndTime;
       this.measureEndTime = this.measureStartTime + this.measureLength;
     }
-    
+    // update measureRatio and beat
     if( this.beatEstablished ) {
       this.measureRatio = ( float(t) - this.measureStartTime ) / this.measureLength;
       this.beat = floor( 4*this.measureRatio );
     } else {
       this.measureRatio = 0;
       this.beat = 0;
-    } 
+    }
+    
+    // reset input and reset flags
+    inputTriggered = false;
+    resetTriggered = false;
   }
   
-  void triggerInput ( int t ) {
-    // t is current time
-    // if the beat is not yet established
-    if( !this.beatEstablished || !this.newBeatReady ) {
-      // if the input string is empty
-      if( !beatInitialized ) {
-        beatInitialized = true;
-        println( "beat sync starting..." );
-      } else {
-        // else input string has 1 measure
-        // include measure length in rolling average
-        this.RA.addEntry( t - this.lastInputTime );
-        // compute measure length
-        this.measureLength = this.RA.ravg();
-        // beat has been established
-        this.beatEstablished = true;
-        this.newBeatReady = true;
-        // sync the beat
-        this.sync( t );
-        // set threshold for next input
-        this.minNextInput = t + this.measureLength*( 1 - this.inputThreshold );
-        this.maxNextInput = t + this.measureLength*( 1 + this.inputThreshold );
-        println( "Beat established. BMP = " + 60000/(this.measureLength*0.25) );
-      }
-    } else {
-      // otherwise, beat has been established
-      // if the current input time is within threshold...
-      if( t > this.minNextInput && t < this.maxNextInput ) {
-        // include measure length in rolling average
-        this.RA.addEntry( t - this.lastInputTime );
-        // compute measure length
-        this.measureLength = this.RA.ravg();
-        println( "Beat modified.  BMP = " + 60000/(this.measureLength*0.25) + " ; num data points: " + this.RA.N );
-      } 
-      // set threshold for next input
-      this.minNextInput = t + this.measureLength*( 1 - this.inputThreshold );
-      this.maxNextInput = t + this.measureLength*( 1 + this.inputThreshold );
-    }
-    // set lastInputTime
-    this.lastInputTime = t;
+  void triggerInput () {
+    inputTriggered = true;
+    inputTriggerTime = millis();
+  }
+  
+  void triggerReset() {
+    resetTriggered = true;
+    resetTriggerTime = millis();
   }
   
   // method to sync beat to current time
@@ -120,17 +161,6 @@ class Metronome {
       this.beat = 0;
   }
   
-  // method to reset the metronome
-  void reset ( ) {
-    this.isOn = true;
-    this.newBeatReady = false;
-    this.beatInitialized = false;
-    this.RA = new RollingAverageInt( RAnum );
-    this.lastInputTime = 0;
-    this.minNextInput = 0;
-    this.maxNextInput = 999999999;
-    println( "resetting beat..." );
-  }
   
   // metronome to return the current beat as a float [0 , 4)
   float beatFloat ( int t ) {

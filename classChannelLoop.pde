@@ -28,7 +28,7 @@ class ChannelLoop {
   boolean full;                       // is the loop completely full?
                                       //   If true, inputOn is set, and no other methods will
                                       //   affect the object except reset() and draw() (spectial case)
-  boolean onToggled;                  // Flag that on state has been toggled
+  boolean onToggleTriggered;                  // Flag that on state has been toggled
   boolean on;                         // is the loop active? Affects output
   color lineColorOn;                  // color of lines in draw box (when on)
   color lineColorOff;                 // color of lines in draw box (when off)
@@ -51,7 +51,7 @@ class ChannelLoop {
     this.resetTriggered = false;
     this.lastEvolveTime = 0;
     this.full = false;
-    this.onToggled = false;
+    this.onToggleTriggered = false;
     this.on = true;
     this.lineColorOn = color( 255 , 255 , 255 );
     this.lineColorOff = color( 196 , 196 , 196 );
@@ -195,11 +195,11 @@ class ChannelLoop {
   } // end of METHOD: resetTriggered ////////////////////////////////////////////
   
   ///////////////////////////////////////////////////////////////////////////////
-  // METHOD: toggleOn                                                       
+  // METHOD: triggerToggle                                                       
   //     Toggles On flag
   ///////////////////////////////////////////////////////////////////////////////
-  void toggleOn() {
-    onToggled = true;
+  void triggerToggle() {
+    onToggleTriggered = true;
   } // end of METHOD: resetTriggered ////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -208,10 +208,9 @@ class ChannelLoop {
   //     arguments:
   //       t: system time of evolution (int)
   ///////////////////////////////////////////////////////////////////////////////
-  void triggerInput( int t ) {
-    if( t > inputClearTime + 30 ) {
-      inputTriggered = true;
-    }
+  void triggerInput() {
+    int t = millis();
+    inputTriggered = true;
     inputTriggerTime = t;
   } // end of METHOD: triggerInput /////////////////////////////////////////////  
   
@@ -221,10 +220,9 @@ class ChannelLoop {
   //     arguments:
   //       t: system time of evolution (int)
   ///////////////////////////////////////////////////////////////////////////////
-  void clearInput( int t ) {
-    if( t > inputTriggerTime + 30 ) {
-      inputCleared = true;
-    }
+  void clearInput() {
+    int t = millis();
+    inputCleared = true;
     inputClearTime = t;
   } // end of METHOD: clearInput /////////////////////////////////////////////
   
@@ -253,7 +251,8 @@ class ChannelLoop {
   ///////////////////////////////////////////////////////////////////////////////
   void evolve( int tIn ) {
     // TYPE: all
-    if( onToggled ) {
+    if( onToggleTriggered ) {
+      // toggle value of on
       this.on = !this.on;
     }
     
@@ -355,7 +354,7 @@ class ChannelLoop {
     
     // clear all flags
     resetTriggered = false;
-    onToggled = false;
+    onToggleTriggered = false;
     inputTriggered = false;
     inputCleared = false;
   } // end of METHOD: evolve ////////////////////////////////////////////////////
