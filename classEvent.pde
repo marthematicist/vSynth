@@ -25,7 +25,7 @@ class Event {
     if( data[0] == 1 ) { this.type = "OneTime"; }
     if( data[1] == 0 ) { this.on = false; }
     if( data[1] == 1 ) { this.on = true; }
-    this.t = 100000000*float( data[2] );
+    this.t = 0.00000001*float( data[2] );
     this.ch = data[3];
   }
   
@@ -59,9 +59,20 @@ class Event {
     if( !on ) { onOut = 0; }
     else      { onOut = 1; }
     // time
-    int tOut = floor( t*0.00000001 );
+    int tOut = floor( t *100000000 );
     // channel
     int chOut = ch;
     return typeOut + " " + onOut + " " + tOut + " " + chOut + "\n";
   }
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: toByte                                                       
+  //     returns a byte version of the event (currently type and time are not included)
+  ///////////////////////////////////////////////////////////////////////////////
+  byte toByte() {
+    int cmd = 1;
+    if( on ) { cmd = 2; }
+    println( 16*cmd + ch );
+    return byte(16*cmd + ch );
+  }
+  
 }
