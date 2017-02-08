@@ -45,7 +45,6 @@ void draw() {
   L.evolve( t );
   
   // get events from Loop
-  // ArrayList<Event> events = L.getEvents( mtLast , mt );
   // send all events to client
   OH.sendAllEvents( s );
   /*
@@ -60,7 +59,13 @@ void draw() {
   // draw
   background(0, 0, 0 );
   //M.draw();
-  L.drawMin( t , 0 , 0 , xRes , yRes , 0.1 );
+  L.drawMin( t , 0 , 0 , xRes*0.1 , yRes*0.8 , 0.1 );
+  drawRecordButton( 0.0*xRes , 0.8*yRes , 0.1*xRes , 0.2*yRes );
+  drawChannelButtons( 0.1*xRes , 0.8*yRes , 0.9*xRes , 0.2*yRes );
+  drawChannelButtons( 0.1*xRes , 0.5*yRes , 0.9*xRes , 0.2*yRes );
+  drawChannelButtons( 0.1*xRes , 0.3*yRes , 0.9*xRes , 0.2*yRes );
+  colorFun( 0.1*xRes , 0.0*yRes , 0.9*xRes , 0.2*yRes );
+  //drawMenuButtons( 0.9*xRes , 0 , 0.1*xRes , yRes );
   //println( C.print() );
   mtLast = mt;
 }
