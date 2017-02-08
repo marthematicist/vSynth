@@ -71,7 +71,7 @@ class Event {
   byte toByte() {
     int cmd = 1;
     if( on ) { cmd = 2; }
-    println( 16*cmd + ch );
+    //println( 16*cmd + ch );
     return byte(16*cmd + ch );
   }
   

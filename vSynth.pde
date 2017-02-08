@@ -68,6 +68,7 @@ void draw() {
   //drawMenuButtons( 0.9*xRes , 0 , 0.1*xRes , yRes );
   //println( C.print() );
   mtLast = mt;
+  println( frameRate );
 }
 
 
