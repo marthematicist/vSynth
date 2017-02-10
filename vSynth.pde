@@ -59,16 +59,16 @@ void draw() {
   // draw
   background(0, 0, 0 );
   //M.draw();
-  L.drawMin( t , 0 , 0 , xRes*0.1 , yRes*0.8 , 0.1 );
-  drawRecordButton( 0.0*xRes , 0.8*yRes , 0.1*xRes , 0.2*yRes );
-  drawChannelButtons( 0.1*xRes , 0.8*yRes , 0.9*xRes , 0.2*yRes );
-  drawChannelButtons( 0.1*xRes , 0.5*yRes , 0.9*xRes , 0.2*yRes );
-  drawChannelButtons( 0.1*xRes , 0.3*yRes , 0.9*xRes , 0.2*yRes );
-  colorFun( 0.1*xRes , 0.0*yRes , 0.9*xRes , 0.2*yRes );
+  L.drawMin( t , 0 , 0 , xRes*0.2 , 320 , 0.1 );
+  drawRecordButton( 0.0*xRes , 320 , 0.2*xRes , 160 );
+  drawChannelButtons( 0.2*xRes , 400 , 0.8*xRes , 80 );
+  drawChannelButtons( 0.2*xRes , 320 , 0.8*xRes , 80 );
+  drawChannelButtons( 0.2*xRes , 240 , 0.8*xRes , 80 );
+  colorFun( 0.2*xRes , 0.0*yRes , 0.9*xRes , 80 );
   //drawMenuButtons( 0.9*xRes , 0 , 0.1*xRes , yRes );
   //println( C.print() );
   mtLast = mt;
-  println( frameRate );
+  //println( frameRate );
 }
 
 
