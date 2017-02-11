@@ -1,6 +1,72 @@
 float GUIstrokeWeight = 2;
 float GUIgap = 4;
 
+void drawChannelButton( float x , float y , int s , color c , boolean active ) {
+  float bg = 4;
+  if( active ) {
+    strokeWeight( 6 );
+    stroke( 255 , 255 , 255 );
+    fill( 128 , 128 , 128 );
+    bg += 1;
+  } else {
+    strokeWeight( 2 );
+    stroke( 128 , 128 , 128 );
+    noFill();
+  }
+  float cr = 10;
+  rect( x + bg , y + bg , 80 - 2*bg , 110 , cr , cr , 0 ,0 );
+  if( active ) {
+    noStroke();
+    fill( c );
+  } else {
+    stroke( c );
+    noFill();
+  }
+  strokeWeight( 8 );
+  ellipse( x + 40 , y + 40 , 50 , 50 );
+  textAlign( CENTER , CENTER );
+  if( active ) {
+    fill( 0 , 0 , 0 );
+  } else {
+    fill( 128 , 128 , 128 );
+  }
+  textSize( 25 );
+  text( s , x + 40 , y + 38 );
+}
+
+void drawSynthButton( float x , float y , int s , color c , boolean active ) {
+  float bg = 4;
+  if( active ) {
+    strokeWeight( 6 );
+    stroke( 255 , 255 , 255 );
+    fill( 128 , 128 , 128 );
+    bg += 1;
+  } else {
+    strokeWeight( 2 );
+    stroke( 128 , 128 , 128 );
+    noFill();
+  }
+  float cr = 10;
+  rect( x + bg , y + bg , 80 - 2*bg , 80 - 2*bg , cr , cr , cr ,cr );
+  if( active ) {
+    noStroke();
+    fill( c );
+  } else {
+    stroke( c );
+    noFill();
+  }
+  strokeWeight( 8 );
+  ellipse( x + 40 , y + 40 , 50 , 50 );
+  textAlign( CENTER , CENTER );
+  if( active ) {
+    fill( 0 , 0 , 0 );
+  } else {
+    fill( 128 , 128 , 128 );
+  }
+  textSize( 25 );
+  text( s , x + 40 , y + 38 );
+}
+
 void drawRecordButton( float x , float y , float w , float h ) {
   stroke( 128 , 128 , 128 );
   strokeWeight( GUIstrokeWeight );
