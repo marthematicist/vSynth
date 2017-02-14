@@ -53,12 +53,12 @@ class ChannelLoop {
     this.full = false;
     this.onToggleTriggered = false;
     this.on = true;
-    this.lineColorOn = color( 255 , 255 , 255 );
-    this.lineColorOff = color( 196 , 196 , 196 );
-    this.bgColorOn = color( 128 , 128 , 128 );
-    this.bgColorOff = color( 64 , 64 , 64 );
-    this.fillColorOn = color( 196 , 196 , 196 );
-    this.fillColorOff = color( 128 , 128 , 128 );
+    this.lineColorOn = color( 0 , 0 , 1 );
+    this.lineColorOff = color( 0 , 0 , 0.75 );
+    this.bgColorOn = color( 0 , 0 , 0.5 );
+    this.bgColorOff = color( 0 , 0 , 0.25 );
+    this.fillColorOn = color( 0 , 0 , 0.75 );
+    this.fillColorOff = color( 0 , 0 , 0.5 );
   }  // end of CONSTRUCTOR
   
   
