@@ -19,7 +19,14 @@ float mtLast = 0;
 color[] synthColors;
 boolean[] synthActive;
 
-SynthSliders SL;
+Metronome M;
+ChannelLoop C;
+Loop L;
+InputHandler IH;
+OutputHandler OH;
+SynthAdjuster SL;
+PatchBay PB;
+PatchSelector PS;
 
 
 void setup() {
@@ -38,7 +45,10 @@ void setup() {
   OH = new OutputHandler( M , L );
   IH = new InputHandler( M , L  , OH);
   s = new Server(this, 12345);
-  SL = new SynthSliders( 160 , 0 , 640 , 160 );
+  PB = new PatchBay();
+  SL = new SynthAdjuster( PB , 160 , 0 , 640 , 160 );
+  
+  PS = new PatchSelector( PB , 160 , 160 , 640 , 160 , 0 );
   
   synthColors = new color[24];
   synthActive = new boolean[24];
@@ -87,11 +97,13 @@ void draw() {
   //drawChannelButtons( 0.2*xRes , 320 , 0.8*xRes , 80 );
   //drawChannelButtons( 0.2*xRes , 240 , 0.8*xRes , 80 );
   for( int i = 0 ; i < 8 ; i++ ) {
-    drawSynthButton( 160 + 80*i , 160 , i , synthColors[i] , synthActive[i] );
-    drawSynthButton( 160 + 80*i , 240 , 8+i , synthColors[8+i] , synthActive[8+i] );
-    drawChannelButton( 160 + 80*i , 380 , 16+i , synthColors[16+i] , synthActive[16+i] );
+    //drawSynthButton( 160 + 80*i , 160 , i , synthColors[i] , synthActive[i] );
+    //drawSynthButton( 160 + 80*i , 240 , 8+i , synthColors[8+i] , synthActive[8+i] );
+    drawChannelButton( 160 + 80*i , 380 , i , synthColors[16+i] , synthActive[16+i] );
   }
   SL.draw();
+  PS.draw();
+  //println( PB.selected );
   //println( C.print() );
   mtLast = mt;
   //println( frameRate );
@@ -99,7 +111,10 @@ void draw() {
 
 
 void mousePressed() {
+  SL.deactivate();
+  PS.deactivate();
   SL.triggerInput( mouseX , mouseY );
+  PS.triggerInput( mouseX , mouseY );
 }
 
 void mouseReleased() {

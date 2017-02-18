@@ -15,10 +15,6 @@ boolean blockTriggered3 = false;
 color beatColor = color( 128 , 0 , 255 , 255 );
 boolean beatTriggered = false;
 
-Metronome M;
-ChannelLoop C;
-Loop L;
-InputHandler IH;
-OutputHandler OH;
+
 
 int RAnum = 40;
