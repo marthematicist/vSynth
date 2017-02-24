@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////
 // Class: PatchSelector                                             //
 ///////////////////////////////////////////////////////////////////////
-class PatchSelector{ 
+class ChannelSelector{ 
   PatchBay P;        
-  int value;              // [0,16]: the currently selected patch, -1 if no patch selected
+  int value;              // [0,7]: the currently selected channel, -1 if no patch selected
   int pValue;             // previous value
   float x;                // control position x
   float y;                // control position y
@@ -26,7 +26,7 @@ class PatchSelector{
   boolean[] drawTriggered;    // array[16] of flags to redraw individual buttons
   
   // CONSTRUCTOR ////////////////////////////////////////////////////////////////
-  PatchSelector( PatchBay Pin , float xIn, float yIn, float wIn, float hIn, int initValue ) {
+  ChannelSelector( PatchBay Pin , float xIn, float yIn, float wIn, float hIn, int initValue ) {
     this.P = Pin;
     this.value = initValue;
     this.pValue = -1;
@@ -57,7 +57,7 @@ class PatchSelector{
   //     Checks input mouse position, and activates control if in bounds
   ///////////////////////////////////////////////////////////////////////////////
   void evolve( ) {
-    if( P.selected < 8 ) {
+    if( P.selected >= 8 ) {
       pValue = value;
       value = -1;
     }
@@ -95,10 +95,9 @@ class PatchSelector{
     for( int i = 0 ; i < 8 ; i++ ) {
       if( mx >= sx + i*pw && mx < sx + (i+1)*pw ) {
         if( my >= sy && my < sy + ph ) { value = i; }
-        if( my >= sy + ph && my <= sy + sh ) { value = i + 8; }
       }
     }
-    P.setSelected( value+8 ) ;
+    P.setSelected( value );
   }
   
   ///////////////////////////////////////////////////////////////////////////////
@@ -118,7 +117,7 @@ class PatchSelector{
     //rect( x , y , w , h );
     rect( sx , sy, sw, sh, cr, cr, cr, cr );
     // draw patches
-    for( int i = 0 ; i < 16 ; i++ ) {
+    for( int i = 0 ; i < 8 ; i++ ) {
       drawPatch( i );
     }
   }
@@ -129,11 +128,13 @@ class PatchSelector{
   ///////////////////////////////////////////////////////////////////////////////
   void drawPatch( int ind ) {
     float cr = 8;
+    
     // get color valuse from PatchBay P
-    float ch = P.synths[ind].h;
-    float cs = P.synths[ind].s;
-    float cv = P.synths[ind].v;
-    float ca = P.synths[ind].a;
+    float ch = P.channels[ind].h;
+    float cs = P.channels[ind].s;
+    float cv = P.channels[ind].v;
+    float ca = P.channels[ind].a;
+    float l = P.channels[ind].l;
     noFill();
     strokeWeight( sWeight );
     textAlign( CENTER , CENTER );
@@ -150,7 +151,8 @@ class PatchSelector{
       stroke( strokeColorInActive );
       noFill();
     }
-    rect( rx , ry, rw, rh, cr, cr, cr, cr );
+    rect( rx , ry, rw, rh*2, cr, cr, cr, cr );
+    
     // draw circle and number
     textSize( 30 );
     if( ind == value ) {
@@ -165,16 +167,69 @@ class PatchSelector{
       } else {
         fill( 0 , 0 , 0 );
       }
-      text( ind , rx + 0.5*rw , ry + 0.45*rh );
+      text( P.channelPatches[ind] , rx + 0.5*rw , ry + 0.45*rh );
     } else {
       strokeWeight( 0.1*rw );
       noFill();
       stroke( ch , cs , cv , 255 );
       ellipse( rx + 0.5*rw , ry + 0.5*rh , 0.8*rw , 0.8*rh );
       textAlign( CENTER , CENTER );
-      fill( 0 , 0 , 0.6 );
+      fill( 0 , 0 , 0.7 );
       noStroke();
-      text( ind , rx + 0.5*rw , ry + 0.45*rh );
+      text( P.channelPatches[ind] , rx + 0.5*rw , ry + 0.45*rh );
+    }
+    
+    // draw length picto
+    float lx = rx + 0.1*rw;
+    float ly = ry + 1.1*rh;
+    float lw = rw*0.8;
+    float lh = rh*0.4;
+    noStroke();
+    if ( ind == value ) { 
+      fill( strokeColorInActive );
+    } else { 
+      fill( strokeColorInActive );
+    }
+    if( P.channels[ind].type == 0 ) {
+      // onOff type
+      rect( lx , ly + 0.75*lh , lw , 0.25*lh );
+      rect( lx + 0.0*lw , ly , lw*0.2 , lh );
+      rect( lx + 0.4*lw , ly , lw*0.4 , lh );
+    } else {
+      if( P.channels[ind].l == 0 ) {
+        // length = 1
+        rect( lx , ly , lw , lh );
+      }
+      if( P.channels[ind].l == 1 ) {
+        // length = 1/2
+        rect( lx , ly , lw, lh*0.4 );
+        rect( lx , ly+0.6*lh , lw , lh*0.4 );
+      }
+      if( P.channels[ind].l == 2 ) {
+        // length = 1/4
+        rect( lx , ly , lw*0.45 , lh*0.4 );
+        rect( lx , ly + 0.6*lh , lw*0.45 , lh*0.4 );
+        rect( lx + 0.55*lw , ly , lw*0.45 , lh*0.4 );
+        rect( lx + 0.55*lw , ly+0.6*lh , lw*0.45 , lh*0.4 );
+      }
+      if( P.channels[ind].l == 3 ) {
+        // length = 1/8
+        float g = 0.2*lw / 3;
+        for( int i = 0 ; i < 4 ; i++ ) {
+          rect( lx + i*(0.2*lw+g) , ly , lw*0.2 , lh*0.4 );
+          rect( lx + i*(0.2*lw+g) , ly + 0.6*lh , lw*0.2 , lh*0.4 );
+        }
+      }
+      if( P.channels[ind].l == 4 ) {
+        // length = 1/16
+        float g = 0.2*lw / 7;
+        for( int i = 0 ; i < 7 ; i++ ) {
+          rect( lx + i*(0.125*lw+g) , ly , lw*0.1 , lh*0.4 );
+          rect( lx + i*(0.125*lw+g) , ly + 0.6*lh , lw*0.1 , lh*0.4 );
+        }
+      }
     }
   }
+  
+
 }

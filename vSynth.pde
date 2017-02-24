@@ -24,9 +24,10 @@ ChannelLoop C;
 Loop L;
 InputHandler IH;
 OutputHandler OH;
-SynthAdjuster SL;
+SynthAdjuster SA;
 PatchBay PB;
 PatchSelector PS;
+ChannelSelector CS;
 
 
 void setup() {
@@ -46,9 +47,10 @@ void setup() {
   IH = new InputHandler( M , L  , OH);
   s = new Server(this, 12345);
   PB = new PatchBay();
-  SL = new SynthAdjuster( PB , 160 , 0 , 640 , 160 );
+  SA = new SynthAdjuster( PB , 160 , 0 , 640 , 160 );
   
-  PS = new PatchSelector( PB , 160 , 160 , 640 , 160 , 0 );
+  PS = new PatchSelector( PB , 160 , 160 , 640 , 160 , -1 );
+  CS = new ChannelSelector( PB , 160 , 360 , 640 , 160 , 0 );
   
   synthColors = new color[24];
   synthActive = new boolean[24];
@@ -74,7 +76,9 @@ void draw() {
   // evolve the ChannelLoop
   L.evolve( t );
   // evolve the slider
-  SL.evolve( mx , my );
+  SA.evolve( mx , my );
+  CS.evolve();
+  PS.evolve();
   
   // get events from Loop
   // send all events to client
@@ -99,26 +103,28 @@ void draw() {
   for( int i = 0 ; i < 8 ; i++ ) {
     //drawSynthButton( 160 + 80*i , 160 , i , synthColors[i] , synthActive[i] );
     //drawSynthButton( 160 + 80*i , 240 , 8+i , synthColors[8+i] , synthActive[8+i] );
-    drawChannelButton( 160 + 80*i , 380 , i , synthColors[16+i] , synthActive[16+i] );
+    //drawChannelButton( 160 + 80*i , 380 , i , synthColors[16+i] , synthActive[16+i] );
   }
-  SL.draw();
+  SA.draw();
   PS.draw();
+  CS.draw();
   //println( PB.selected );
   //println( C.print() );
   mtLast = mt;
-  //println( frameRate );
+  println( PB.selected , PB.prevSelected );
 }
 
 
 void mousePressed() {
-  SL.deactivate();
+  SA.deactivate();
   PS.deactivate();
-  SL.triggerInput( mouseX , mouseY );
+  SA.triggerInput( mouseX , mouseY );
   PS.triggerInput( mouseX , mouseY );
+  CS.triggerInput( mouseX , mouseY );
 }
 
 void mouseReleased() {
-  SL.deactivate();
+  SA.deactivate();
 }
 
 void keyPressed() {

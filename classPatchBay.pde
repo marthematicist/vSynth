@@ -40,6 +40,15 @@ class PatchBay {
   }
   
   ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: setSelected                                                   
+  //     sets selected to input ind
+  ///////////////////////////////////////////////////////////////////////////////
+  void setSelected( int ind ) {
+    prevSelected = selected;
+    selected = ind;
+  }
+  
+  ///////////////////////////////////////////////////////////////////////////////
   // METHOD: patchSelectedToChannel                                                   
   //     patches the selected synth to the channel with input index
   //     does nothing if a channel is selected
@@ -58,6 +67,18 @@ class PatchBay {
     return( color( synths[ind].h , synths[ind].s , synths[ind].v , synths[ind].a ) );
   }
   
+  //////////////////////////////////////////////////////////////////////////////
+  // METHOD: selectedPatch                                                       
+  //     returns selected patch
+  ///////////////////////////////////////////////////////////////////////////////
+  Patch selectedPatch( ) {
+    if( selected < 8 ) {
+      return channels[selected];
+    } else {
+      return synths[selected-8];
+    }
+    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +112,7 @@ class Patch {
     this.v = random(0.8,1);
     this.a = 255;
     if( type == 0 ) { this.l = 0; }
-    if( type == 1 ) { this.l = 1; }
+    if( type == 1 ) { this.l = 2; }
   }
   
   ///////////////////////////////////////////////////////////////////////////////
