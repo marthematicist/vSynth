@@ -111,7 +111,7 @@ void draw() {
   //println( PB.selected );
   //println( C.print() );
   mtLast = mt;
-  println( PB.selected , PB.prevSelected );
+  println( frameRate );
 }
 
 
