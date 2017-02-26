@@ -14,7 +14,7 @@ class SynthAdjuster {
   float A;
   int L;
   Slider HSL ;           // hue slider
-  Slider ASL;            // alpha slider
+  VSlider ASL;            // alpha slider
   LengthSelector LS;      // length selector
   SVPicker SVP;           // saturation value picker
   boolean drawBGTriggered;
@@ -26,10 +26,11 @@ class SynthAdjuster {
     this.y = yIn;
     this.w = wIn;
     this.h = hIn;
-    this.HSL = new Slider( x, y, w, h/3, 2.0/3 );
-    this.ASL = new Slider( x + 0.5*w, h/3, 0.5*w, h/3, 1 );
+    this.HSL = new Slider( x, y, 0.5*w, h/3, 0.5 );
+    //this.ASL = new Slider( x + 0.5*w, h/3, 0.5*w, h/3, 1 );
+    this.ASL = new VSlider( x + 7.0/16*w, h/3, 1.0/16*w, 2*h/3, 0 );
     this.LS = new LengthSelector( P , x + 0.5*w , 2*h/3 , 0.5*w , h/3 , 2 );
-    this.SVP = new SVPicker( x, h/3, 0.5*w, 2*h/3, 1 , 0 );
+    this.SVP = new SVPicker( x, h/3, 7.0/16*w, 2*h/3, 1 , 0 );
     this.drawBGTriggered = false;
     setHSVAL();
   }
@@ -41,7 +42,7 @@ class SynthAdjuster {
     H = 360*HSL.value;
     S = SVP.S;
     V = 1-SVP.V;
-    A = 255*ASL.value;
+    A = 255*(1-ASL.value);
     L = LS.value;
     HSL.drawTriggered = true;
     ASL.drawTriggered = true;
@@ -110,7 +111,7 @@ class SynthAdjuster {
       HSL.value = H/360;
       //SL[1].value = S;
       //SL[2].value = V;
-      ASL.value = A/255;
+      ASL.value = 1-A/255;
       SVP.S = S;
       SVP.V = 1-V;
       LS.value = L;
@@ -126,20 +127,21 @@ class SynthAdjuster {
       int N = 64;
       int M = 16;
       float w0 = HSL.sw / float(N);
-      float w3 = ASL.sw / float(N);
+      float h3 = ASL.sh / float(N);
       float svw = SVP.sw / float(N);
       float svh = SVP.sh / float(M);
       noStroke();
       fill( 0 , 0 , 1 );
       textAlign( CENTER , CENTER );
-      textSize( 15 );
-      text( "A      L      P      H      A" , ASL.sx + 0.5*ASL.sw , ASL.sy + 0.47*ASL.sh );
+      textSize( 10 );
+      text( "A\nL\nP\nH\nA" , ASL.sx + 0.5*ASL.sw , ASL.sy + 0.47*ASL.sh );
       for ( int i = 0; i < N; i++ ) {
         float a = float(i) / float(N);
         fill( 360*a, 1, 1 );
         rect( HSL.sx + i*w0, HSL.sy + 0.35*HSL.sh, w0, 0.3*HSL.sh );
-        fill( H, S, V , a*255 );
-        rect( ASL.sx + i*w3, ASL.sy + 0.35*ASL.sh, w3, 0.3*ASL.sh );
+        fill( H, S, V , (1-a)*255 );
+        rect( ASL.sx + 0.35*ASL.sw, ASL.sy +  i*h3, 0.3*ASL.sw , h3 );
+        //rect( ASL.sx + i*w3, ASL.sy + 0.35*ASL.sh, w3, 0.3*ASL.sh );
         for( int m = 0 ; m < M ; m++ ) {
           float b = float(m) / float(M);
           fill( H , a , 1-b );
@@ -441,6 +443,137 @@ class Slider {
   ///////////////////////////////////////////////////////////////////////////////
   boolean evolve( float mx, float my ) {
     if ( active && mx != mxp ) {
+      setValue( mx, my );
+      mxp = mx;
+      myp = my;
+      drawTriggered = true;
+      return true;
+    }
+    return false;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+// Class: VSlider                                                     //
+///////////////////////////////////////////////////////////////////////
+class VSlider {
+  // FIELDS ///////////////////////////////////////////////////////////////////////
+  float value;            // [0,1]
+  float pValue;           // previous value
+  float x;                // control position x
+  float y;                // control position y
+  float w;                // control size x
+  float h;                // control size y
+  float sWeight;          // draw strokeWeight
+  float gap;              // draw gap (pixels)
+  float sx;               // slider position x
+  float sy;               // slider position y
+  float sw;               // slider size x
+  float sh;               // slider size y
+  color strokeColorActive;
+  color strokeColorInActive;
+  boolean active;
+  boolean drawTriggered;
+  float mx0;               // initial mouse position x
+  float my0;               // initial mouse position y
+  float mxp;               // previous mouse position x
+  float myp;               // previous mouse position y
+
+  // CONSTRUCTOR ////////////////////////////////////////////////////////////////
+  VSlider( float xIn, float yIn, float wIn, float hIn, float initValue ) {
+    this.value = initValue;
+    this.pValue = initValue;
+    this.x = xIn;
+    this.y = yIn;
+    this.w = wIn;
+    this.h = hIn;
+    this.gap = 4;
+    this.sWeight = 2;
+    this.sx = x + gap;
+    this.sy = y + gap;
+    this.sw = w - 2*gap;
+    this.sh = h - 2*gap;
+    this.strokeColorActive = color( 0, 0, 1 );
+    this.strokeColorInActive = color( 0, 0, 0.5 );
+    this.active = false;
+    this.drawTriggered = true;
+    this.mx0 = 0;
+    this.my0 = 0;
+    this.mxp = 0;
+    this.myp = 0;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: triggerInput                                                       
+  //     Checks input mouse position, and activates control if in bounds
+  ///////////////////////////////////////////////////////////////////////////////
+  boolean triggerInput( float mx, float my ) {
+    if ( mx >= x && mx < x + w && my >= y && my < y + h ) {
+      active = true;
+      mxp = mx;
+      myp = my;
+      mx0 = mx;
+      my0 = my;
+      setValue( mx, my );
+      drawTriggered = true;
+      return true;
+    }
+    return false;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: deactivate                                                       
+  ///////////////////////////////////////////////////////////////////////////////
+  void deactivate() {
+    if ( active ) {
+      active = false;
+      drawTriggered = true;
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: setValue                                                       
+  //     Checks input mouse position, and sets the value accordingly
+  ///////////////////////////////////////////////////////////////////////////////
+  void setValue( float mx, float my ) {
+    if ( my <= sy ) { 
+      value = 0;
+    }
+    if ( my >= sy + sh ) {
+      value = 1;
+    }
+    if ( my > sy && my < sy + sh ) { 
+      value = ( my - sy ) / sh ;
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: draw                                                       
+  //     draws control
+  ///////////////////////////////////////////////////////////////////////////////
+  void draw( ) {
+    drawTriggered = false;
+    float cr = 5;
+    noFill();
+    strokeWeight( sWeight );
+    if ( active ) { 
+      stroke( strokeColorActive );
+    } else { 
+      stroke( strokeColorInActive );
+    }
+    rect( sx + 0.2*sw , sy , 0.6*sw, sh, cr, cr, cr, cr );
+    float hd = 0.1*sw;
+    float yd = sy + value*sh - 0.5*hd;
+    stroke( strokeColorActive );
+    fill( strokeColorInActive );
+    rect( sx, yd, sw, hd, cr, cr, cr, cr );
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: evolve                                                       
+  ///////////////////////////////////////////////////////////////////////////////
+  boolean evolve( float mx, float my ) {
+    if ( active && my != myp ) {
       setValue( mx, my );
       mxp = mx;
       myp = my;
