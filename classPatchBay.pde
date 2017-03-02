@@ -14,6 +14,8 @@ class PatchBay {
   int[] channelPatches;      // array[8] of int
                              // for each channel, the synth that is patched
   boolean[] channelOn;       // for each channel, is it on (loop)
+  boolean[] drawTrigger;     // array of flags to trigger element redraw: channel[0-7] , synth[8-23]
+  
   
   // CONSTRUCTOR ///////////////////////////////////////////////////////////////
   PatchBay() {
@@ -23,6 +25,7 @@ class PatchBay {
     this.synths = new Patch[16];
     this.channelPatches = new int[8];
     this.channelOn = new boolean[8];
+    this.drawTrigger = new boolean[24];
     for( int i = 0 ; i < 8 ; i++ ) {
       // initialize OnOff synths
       this.synths[i] = new Patch( 0 );
@@ -31,6 +34,9 @@ class PatchBay {
       // initialize channels (will be over-written in next loop)
       this.channels[i] = new Patch( 0 );
       this.channelOn[i] = true;
+      this.drawTrigger[i] = true;
+      this.drawTrigger[i+8] = true;
+      this.drawTrigger[i+16] = true;
     }
     for( int i = 0 ; i < 4 ; i++ ) {
       // patch synths[0-3] to channels[0-3]
@@ -40,6 +46,49 @@ class PatchBay {
       this.channels[i+4].patchIn( this.synths[i+8] );
       this.channelPatches[i+4] = i+8;
     }
+  }
+  
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: triggerDrawSynth                                                   
+  //     sets flag to redraw synth with index ind
+  ///////////////////////////////////////////////////////////////////////////////
+  void triggerDrawSynth( int ind ) {
+    drawTrigger[ind+8] = true;
+  }
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: triggerDrawChannel                                                   
+  //     sets flag to redraw channel with index ind
+  ///////////////////////////////////////////////////////////////////////////////
+  void triggerDrawChannel( int ind ) {
+    drawTrigger[ind] = true;
+  }
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: clearDrawSynth                                                   
+  //     clears flag to redraw synth with index ind
+  ///////////////////////////////////////////////////////////////////////////////
+  void clearDrawSynth( int ind ) {
+    drawTrigger[ind+8] = false;
+  }
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: clearDrawChannel                                                   
+  //     clears flag to redraw channel with index ind
+  ///////////////////////////////////////////////////////////////////////////////
+  void clearDrawChannel( int ind ) {
+    drawTrigger[ind] = false;
+  }
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: drawFlagSynth                                                   
+  //     clears flag to redraw channel with index ind
+  ///////////////////////////////////////////////////////////////////////////////
+  boolean drawFlagSynth( int ind ) {
+    return drawTrigger[ind+8];
+  }
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: drawFlagChannel                                                   
+  //     clears flag to redraw channel with index ind
+  ///////////////////////////////////////////////////////////////////////////////
+  boolean drawFlagChannel( int ind ) {
+    return drawTrigger[ind];
   }
   
   ///////////////////////////////////////////////////////////////////////////////

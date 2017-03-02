@@ -107,20 +107,29 @@ class ChannelSelector{
   //     Draws the PatchSelector
   ///////////////////////////////////////////////////////////////////////////////
   void draw() {
-    drawAllTriggered = false;
-    float cr = 10;
-    noFill();
-    strokeWeight( sWeight );
-    if ( active ) { 
-      stroke( strokeColorActive );
-    } else { 
-      stroke( strokeColorInActive );
-    }
-    //rect( x , y , w , h );
-    rect( sx , sy, sw, sh, cr, cr, cr, cr );
-    // draw patches
+    
     for( int i = 0 ; i < 8 ; i++ ) {
-      drawPatch( i );
+      if( P.drawTrigger[i] ) { drawAllTriggered = true; }
+    }
+    if( drawAllTriggered ) {
+      drawAllTriggered = false;
+      float cr = 10;
+      fill( 0 , 0 , 0 );
+      noStroke();
+      rect( x , y , w , h );
+      noFill();
+      strokeWeight( sWeight );
+      if ( active ) { 
+        stroke( strokeColorActive );
+      } else { 
+        stroke( strokeColorInActive );
+      }
+      //rect( x , y , w , h );
+      rect( sx , sy, sw, sh, cr, cr, cr, cr );
+      // draw patches
+      for( int i = 0 ; i < 8 ; i++ ) {
+        drawPatch( i );
+      }
     }
   }
   
@@ -130,7 +139,6 @@ class ChannelSelector{
   ///////////////////////////////////////////////////////////////////////////////
   void drawPatch( int ind ) {
     float cr = 8;
-    
     // get color valuse from PatchBay P
     float ch = P.channels[ind].h;
     float cs = P.channels[ind].s;

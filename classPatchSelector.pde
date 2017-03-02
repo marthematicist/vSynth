@@ -110,20 +110,28 @@ class PatchSelector{
   //     Draws the PatchSelector
   ///////////////////////////////////////////////////////////////////////////////
   void draw() {
-    drawAllTriggered = false;
-    float cr = 10;
-    noFill();
-    strokeWeight( sWeight );
-    if ( active ) { 
-      stroke( strokeColorActive );
-    } else { 
-      stroke( strokeColorInActive );
+    for( int i = 8 ; i < 24 ; i++ ) {
+      if( P.drawTrigger[i] ) { drawAllTriggered = true; }
     }
-    //rect( x , y , w , h );
-    rect( sx , sy, sw, sh, cr, cr, cr, cr );
-    // draw patches
-    for( int i = 0 ; i < 16 ; i++ ) {
-      drawPatch( i );
+    if( drawAllTriggered ) {
+      drawAllTriggered = false;
+      float cr = 10;
+      fill( 0 , 0 , 0 );
+      noStroke();
+      rect( x , y , w , h );
+      noFill();
+      strokeWeight( sWeight );
+      if ( active ) { 
+        stroke( strokeColorActive );
+      } else { 
+        stroke( strokeColorInActive );
+      }
+      //rect( x , y , w , h );
+      rect( sx , sy, sw, sh, cr, cr, cr, cr );
+      // draw patches
+      for( int i = 0 ; i < 16 ; i++ ) {
+        drawPatch( i );
+      }
     }
   }
   

@@ -49,8 +49,14 @@ class Patcher{
   // METHOD: evolve                                                       
   ///////////////////////////////////////////////////////////////////////////////
   void evolve( ) {
-    if( P.selected >=8 ) { active = true; } 
-    else { active = false; }
+    if( P.selected >=8 ) {
+      if( !active ) { drawTriggered = true; }
+      active = true; 
+    } 
+    else { 
+      if( active ) { drawTriggered = true; }
+      active = false; 
+    }
   }
   
     
@@ -94,24 +100,29 @@ class Patcher{
   //     Draws the PatchSelector
   ///////////////////////////////////////////////////////////////////////////////
   void draw() {
-    drawTriggered = false;
-    strokeJoin( ROUND );
-    float cr = 10;
-    strokeWeight( sWeight );
-    if ( active ) { 
-      stroke( strokeColorActive );
-      fill( fillColor );
-    } else { 
-      stroke( strokeColorInActive );
-      noFill();
-    }
-    // draw patches
-    for( int i = 0 ; i < 16 ; i++ ) {
-      float xt = sx + i*pw + gap;
-      float yt = sy;
-      float wt = pw - 2*gap;
-      float ht = ph;
-      triangle( xt , yt , xt + wt , yt , xt + 0.5*wt , yt + ht );
+    if( drawTriggered ) {
+      drawTriggered = false;
+      fill( 0 , 0 , 0 );
+      noStroke();
+      rect( x , y , w , h );
+      strokeJoin( ROUND );
+      float cr = 10;
+      strokeWeight( sWeight );
+      if ( active ) { 
+        stroke( strokeColorActive );
+        fill( fillColor );
+      } else { 
+        stroke( strokeColorInActive );
+        noFill();
+      }
+      // draw patches
+      for( int i = 0 ; i < 8 ; i++ ) {
+        float xt = sx + i*pw + gap;
+        float yt = sy;
+        float wt = pw - 2*gap;
+        float ht = ph;
+        triangle( xt , yt , xt + wt , yt , xt + 0.5*wt , yt + ht );
+      }
     }
   }
 }

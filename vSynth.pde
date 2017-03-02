@@ -96,7 +96,7 @@ void draw() {
     
 
   // draw
-  background(0, 0, 0 );
+  //background(0, 0, 0 );
   //M.draw();
   L.drawMin( t , 0 , 160 , xRes*0.2 , 280 , 0.1 );
   //drawRecordButton( 0.0*xRes , 0 , 0.2*xRes , 160 );

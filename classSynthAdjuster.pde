@@ -17,7 +17,7 @@ class SynthAdjuster {
   VSlider ASL;            // alpha slider
   LengthSelector LS;      // length selector
   SVPicker SVP;           // saturation value picker
-  boolean drawBGTriggered;
+  boolean drawTriggered;
 
   // CONSTRUCTOR ////////////////////////////////////////////////////////////////
   SynthAdjuster( PatchBay Pin , float xIn, float yIn, float wIn, float hIn ) {
@@ -31,7 +31,7 @@ class SynthAdjuster {
     this.ASL = new VSlider( x + 7.0/16*w, y + 0*h/3, 1.0/16*w, 3*h/3, 1 - P.channels[P.selected].a );
     this.LS = new LengthSelector( P , x + 0.5*w , 2*h/3 , 0.5*w , h/3 , P.channels[P.selected].l );
     this.SVP = new SVPicker( x, h/3, 7.0/16*w, 2*h/3, P.channels[P.selected].s , 1 - P.channels[P.selected].v );
-    this.drawBGTriggered = false;
+    this.drawTriggered = false;
     setHSVAL();
   }
   ///////////////////////////////////////////////////////////////////////////////
@@ -59,6 +59,7 @@ class SynthAdjuster {
       P.synths[P.selected-8].v = V;
       P.synths[P.selected-8].a = A;
     }
+    P.drawTrigger[P.selected] = true;
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -67,6 +68,7 @@ class SynthAdjuster {
   ///////////////////////////////////////////////////////////////////////////////
   void triggerInput( float mx, float my ) {
     if ( mx >= x && mx < x + w && my >= y && my < y + h ) {
+      drawTriggered = true;
       HSL.triggerInput( mx, my );
       ASL.triggerInput( mx, my );
       LS.triggerInput( mx , my );
@@ -90,13 +92,13 @@ class SynthAdjuster {
   ///////////////////////////////////////////////////////////////////////////////
   void evolve( float mx, float my ) {
     if( SVP.evolve(mx,my) || HSL.evolve(mx,my) || ASL.evolve(mx,my) ) {
-      drawBGTriggered = true;
+      drawTriggered = true;
       setHSVAL();
     }
     if( P.selected != P.prevSelected ) {
+      drawTriggered = true;
       if( P.selected < 8 ) {
         // channel 0-8
-
         println( P.selected );
         S = P.channels[P.selected].s;
         V = P.channels[P.selected].v;
@@ -110,8 +112,6 @@ class SynthAdjuster {
         L = P.synths[P.selected-8].l;
       }
       HSL.value = H;
-      //SL[1].value = S;
-      //SL[2].value = V;
       ASL.value = 1-A;
       SVP.S = S;
       SVP.V = 1-V;
@@ -124,14 +124,17 @@ class SynthAdjuster {
   ///////////////////////////////////////////////////////////////////////////////
   void draw( ) {
     if ( true ) {
-      drawBGTriggered = false;
-      int N = 64;
+      drawTriggered = false;
+      int N = 32;
       int M = 16;
+      float amt = 1.08;
       float w0 = HSL.sw / float(N);
       float h3 = ASL.sh / float(N);
       float svw = SVP.sw / float(N);
       float svh = SVP.sh / float(M);
       noStroke();
+      fill( 0 , 0 , 0 );
+      rect( x , y , w , h );
       fill( 0 , 0 , 1 );
       textAlign( CENTER , CENTER );
       textSize( 10 );
@@ -139,14 +142,14 @@ class SynthAdjuster {
       for ( int i = 0; i < N; i++ ) {
         float a = float(i) / float(N);
         fill( a, 1, 1 );
-        rect( HSL.sx + i*w0, HSL.sy + 0.35*HSL.sh, w0, 0.3*HSL.sh );
+        rect( HSL.sx + i*w0, HSL.sy + 0.35*HSL.sh, w0*amt, 0.3*HSL.sh );
         fill( H, S, V , (1-a) );
-        rect( ASL.sx + 0.35*ASL.sw, ASL.sy +  i*h3, 0.3*ASL.sw , h3 );
+        rect( ASL.sx + 0.35*ASL.sw, ASL.sy +  i*h3, 0.3*ASL.sw , h3*amt );
         //rect( ASL.sx + i*w3, ASL.sy + 0.35*ASL.sh, w3, 0.3*ASL.sh );
         for( int m = 0 ; m < M ; m++ ) {
           float b = float(m) / float(M);
           fill( H , a , 1-b );
-          rect( SVP.sx + i*svw , SVP.sy + m*svh , svw , svh );
+          rect( SVP.sx + i*svw , SVP.sy + m*svh , svw*amt , svh*amt );
         }
         
       }

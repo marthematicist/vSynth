@@ -113,13 +113,16 @@ class Loop {
     float g = 4;
     float wc = (ws - g*(numChannels+1)) / numChannels;
     float hc = hs;
+    noStroke();
+    fill( 0 , 0 , 0 );
+    rect( xl , yl , wl , hl );
     strokeWeight(2);
     stroke( 0 , 0 , 0.5 );
     noFill();
     rect( xs , ys , ws , hs , 5 , 5 , 5 , 5 );
     // draw the channels
     for( int i = 0 ; i < numChannels ; i++ ) {
-      cl[i].drawMin2( xs + i*(wc + g) + g , ys , wc , hc );
+      cl[i].drawMin( xs + i*(wc + g) + g , ys , wc , hc );
     }
     // draw the cursor
     stroke( this.cursorColor );
@@ -301,102 +304,13 @@ class ChannelLoop {
    
   
   
-  
+
+
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: drawMin                                                       
   //     draws the loop to the screen
   ///////////////////////////////////////////////////////////////////////////////
   void drawMin( float xc , float yc , float wc , float hc ) {
-    //float mt = M.measureTime( t );
-    noFill();
-    strokeCap( SQUARE );
-    // check whether horizontal or vertical and set line width
-    boolean vert;
-    if( wc < hc ) {
-      vert = true;
-      strokeWeight( 4 );
-    } else {
-      vert = false;
-      strokeWeight( 4 );
-    }
-    // set the background color
-    if( this.on ) { stroke( this.bgColorOn ); } 
-    else          { stroke( this.bgColorOff ); }
-    // draw the background
-    if( !vert ) { line( xc , yc + 0.5*hc , xc + wc , yc + 0.5*hc ); }
-    else        { line( xc + 0.5*wc , yc , xc + 0.5*wc , yc + hc ); }
-    if( wc < hc ) {
-      vert = true;
-      strokeWeight( wc );
-    } else {
-      vert = false;
-      strokeWeight( hc );
-    }
-    // set the event color
-    if( this.on ) { stroke( this.fillColorOn ); } 
-    else          { stroke( this.fillColorOff ); }
-    // draw the events - TYPE: "OnOff"
-    if( type == 0 && events.size() > 0 ) {
-      // if the first event is an Off, draw event from start to it
-      if( !events.get( 0 ).on ) {
-        if( !vert ) { line( xc , yc + 0.5*hc , xc + wc*events.get(0).t , yc + 0.5*hc ); }
-        else        { line( xc + 0.5*wc , yc , xc + 0.5*wc , yc + hc*events.get(0).t ); }
-      }
-      // if the last event is an ON, draw event from it to end
-      int last = events.size() - 1;
-      if( events.get(last).on ) {
-        if( !vert ) { line( xc + wc*events.get(last).t , yc + 0.5*hc , xc + wc , yc + 0.5*hc ); }
-        else        { line( xc + 0.5*wc , yc + hc*events.get(last).t , xc + 0.5*wc , yc + hc ); }
-      }
-      // if there are at least two events, draw lines between them
-      if( events.size() > 1 ) {
-        // for each pair of events
-        for( int i = 0 ; i < events.size() - 1 ; i++ ) {
-          // only draw if first event is On and second is Off
-          if( events.get(i).on && !events.get(i+1).on ) {
-            // get t1 and t2, measureTimes for the events
-            float t1 = events.get(i).t;
-            float t2 = events.get(i+1).t;
-            // draw the On event
-            if( !vert ) { line( xc + wc*t1 , yc + 0.5*hc , xc + wc*t2 , yc + 0.5*hc ); }
-            else        { line( xc + 0.5*wc , yc + hc*t1 , xc + 0.5*wc , yc + hc*t2 ); } 
-          }
-        }
-      }
-    }
-    // draw the events - TYPE: "Timed"
-    if( type == 1 && events.size() > 0 ) {
-      // for each event...
-      for( int i = 0 ; i < events.size() ; i++ ) {
-        // get t1, measureTime for the event
-        float t1 = events.get(i).t;
-        float t2 = events.get(i).t+0.02;
-        if( t2 > 1 ) { t2 = 1; }
-        // set the event color
-        if( this.on ) { stroke( this.fillColorOn ); } 
-        else          { stroke( this.fillColorOff ); }
-        if( !vert ) { strokeWeight( hc ); }
-        else        { strokeWeight( wc ); }
-        // draw the On event
-        if( !vert ) { line( xc + wc*t1 , yc + 0.5*hc , xc + wc*t2 , yc + 0.5*hc ); }
-        else        { line( xc + 0.5*wc , yc + hc*t1 , xc + 0.5*wc , yc + hc*t2 ); } 
-        // set the line color
-        
-        if( this.on ) { stroke( this.lineColorOn ); }
-        else          { stroke( this.lineColorOff ); }
-        strokeWeight( 5 );
-        // draw the On beginning
-        if( !vert ) { line( xc + wc*t1 , yc , xc + wc*t1 , yc + hc ); }
-        else        { line( xc , yc + hc*t1 , xc + wc , yc + hc*t1 ); } 
-      }
-    }
-  }
-
-  ///////////////////////////////////////////////////////////////////////////////
-  // METHOD: drawMin2                                                       
-  //     draws the loop to the screen
-  ///////////////////////////////////////////////////////////////////////////////
-  void drawMin2( float xc , float yc , float wc , float hc ) {
     noFill();
     strokeCap( SQUARE );
     // draw the background line
