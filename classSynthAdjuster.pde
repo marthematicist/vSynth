@@ -26,11 +26,11 @@ class SynthAdjuster {
     this.y = yIn;
     this.w = wIn;
     this.h = hIn;
-    this.HSL = new Slider( x, y, 0.5*w, h/3, 0.5 );
+    this.HSL = new Slider( x, y, 7.0/16*w, h/3, P.channels[P.selected].h );
     //this.ASL = new Slider( x + 0.5*w, h/3, 0.5*w, h/3, 1 );
-    this.ASL = new VSlider( x + 7.0/16*w, h/3, 1.0/16*w, 2*h/3, 0 );
-    this.LS = new LengthSelector( P , x + 0.5*w , 2*h/3 , 0.5*w , h/3 , 2 );
-    this.SVP = new SVPicker( x, h/3, 7.0/16*w, 2*h/3, 1 , 0 );
+    this.ASL = new VSlider( x + 7.0/16*w, y + 0*h/3, 1.0/16*w, 3*h/3, 1 - P.channels[P.selected].a );
+    this.LS = new LengthSelector( P , x + 0.5*w , 2*h/3 , 0.5*w , h/3 , P.channels[P.selected].l );
+    this.SVP = new SVPicker( x, h/3, 7.0/16*w, 2*h/3, P.channels[P.selected].s , 1 - P.channels[P.selected].v );
     this.drawBGTriggered = false;
     setHSVAL();
   }
@@ -39,10 +39,10 @@ class SynthAdjuster {
   //     sets hue, saturation, value, alpha based on slider values and length
   ///////////////////////////////////////////////////////////////////////////////
   void setHSVAL() {
-    H = 360*HSL.value;
+    H = HSL.value;
     S = SVP.S;
     V = 1-SVP.V;
-    A = 255*(1-ASL.value);
+    A = (1-ASL.value);
     L = LS.value;
     HSL.drawTriggered = true;
     ASL.drawTriggered = true;
@@ -96,7 +96,8 @@ class SynthAdjuster {
     if( P.selected != P.prevSelected ) {
       if( P.selected < 8 ) {
         // channel 0-8
-        H = P.channels[P.selected].h;
+
+        println( P.selected );
         S = P.channels[P.selected].s;
         V = P.channels[P.selected].v;
         A = P.channels[P.selected].a;
@@ -108,10 +109,10 @@ class SynthAdjuster {
         A = P.synths[P.selected-8].a;
         L = P.synths[P.selected-8].l;
       }
-      HSL.value = H/360;
+      HSL.value = H;
       //SL[1].value = S;
       //SL[2].value = V;
-      ASL.value = 1-A/255;
+      ASL.value = 1-A;
       SVP.S = S;
       SVP.V = 1-V;
       LS.value = L;
@@ -137,9 +138,9 @@ class SynthAdjuster {
       text( "A\nL\nP\nH\nA" , ASL.sx + 0.5*ASL.sw , ASL.sy + 0.47*ASL.sh );
       for ( int i = 0; i < N; i++ ) {
         float a = float(i) / float(N);
-        fill( 360*a, 1, 1 );
+        fill( a, 1, 1 );
         rect( HSL.sx + i*w0, HSL.sy + 0.35*HSL.sh, w0, 0.3*HSL.sh );
-        fill( H, S, V , (1-a)*255 );
+        fill( H, S, V , (1-a) );
         rect( ASL.sx + 0.35*ASL.sw, ASL.sy +  i*h3, 0.3*ASL.sw , h3 );
         //rect( ASL.sx + i*w3, ASL.sy + 0.35*ASL.sh, w3, 0.3*ASL.sh );
         for( int m = 0 ; m < M ; m++ ) {

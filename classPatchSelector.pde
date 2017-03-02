@@ -54,7 +54,6 @@ class PatchSelector{
   
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: evolve                                                       
-  //     Checks input mouse position, and activates control if in bounds
   ///////////////////////////////////////////////////////////////////////////////
   void evolve( ) {
     if( P.selected < 8 ) {
@@ -94,11 +93,16 @@ class PatchSelector{
     pValue = value;
     for( int i = 0 ; i < 8 ; i++ ) {
       if( mx >= sx + i*pw && mx < sx + (i+1)*pw ) {
-        if( my >= sy && my < sy + ph ) { value = i; }
-        if( my >= sy + ph && my <= sy + sh ) { value = i + 8; }
+        if( my >= sy && my < sy + ph ) { 
+          value = i; 
+          P.setSelected( value + 8 );
+        }
+        if( my >= sy + ph && my <= sy + sh ) { 
+          value = i + 8; 
+          P.setSelected( value + 8 );
+        }
       }
     }
-    P.setSelected( value+8 ) ;
   }
   
   ///////////////////////////////////////////////////////////////////////////////

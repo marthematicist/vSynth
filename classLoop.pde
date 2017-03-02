@@ -1,20 +1,20 @@
 // FUNCTION loopSetup
-Loop loopSetup( Metronome Min) {
+Loop loopSetup( Metronome Min , PatchBay PBin) {
   // initialize Loop
   int numChannels = 8;              // number of channels
-  color cursorColor = color( 60 , 1 , 1 );
-  Loop Lout = new Loop( numChannels , Min , cursorColor );
+  color cursorColor = color( 0.1667 , 1 , 1 );
+  Loop Lout = new Loop( numChannels , Min , PBin , cursorColor );
   
   // set type
-  String[] types = { "OnOff" , "OnOff" , "OnOff" , "OnOff" , "OnOff" , "OnOff" , "OnOff" , "OnOff" };
+  int[] types = { 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
   
   // set parameters
   for( int i = 0 ; i < numChannels ; i++ ) {
-    String type = types[i];
+    int type = types[i];
     color lineColorOn = color( 0 , 0 , 1 );
     color lineColorOff = color( 0 , 0 , 0.5 );
-    color fillColorOn = color( 320*i/numChannels , 1 , 1 );
-    color fillColorOff = color( 320*i/numChannels , 0.5 , 0.5 );
+    color fillColorOn = color( float(i)/float(numChannels) , 1 , 1 );
+    color fillColorOff = color( float(i)/float(numChannels) , 0.5 , 0.5 );
     color bgColorOn = color( 0 , 0 , 0.5 );
     color bgColorOff = color( 0 , 0 , 0.25 );
     
@@ -43,14 +43,15 @@ class Loop {
                                 // ChannelLoops contain data about events scheduled
                                 // on a channel
   Metronome M;                  // Metronome attached to instance
-
+  PatchBay PB;
   color cursorColor;            // color of draw cursor
   
-  Loop( int n , Metronome Min , 
+  Loop( int n , Metronome Min , PatchBay PBin, 
         color cursorColorIn ) {
     this.numChannels = n;
     this.cl = new ChannelLoop[ this.numChannels ];
     this.M = Min;
+    this.PB = PBin;
     this.cursorColor = cursorColorIn;
   }
   
@@ -95,6 +96,8 @@ class Loop {
     return output;
   }
   
+  
+  
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: drawMin                                                       
   //     draws the loop to the screen
@@ -102,33 +105,27 @@ class Loop {
   void drawMin( int t , float xl , float yl , float wl , float hl , float gapRatio ) {
     // get the measureTime from the Metronome
     float mt = M.measureTime( t );
-    // check whether horizontal or vertical and set gap and channel height/width
-    boolean vert;
-    float g;
-    float wc;
-    float hc;
-    if( wl > hl ) {
-      vert = false;
-      g = hl / numChannels * gapRatio;
-      wc = wl;
-      hc = (hl - g*(numChannels - 1)) / numChannels ;
-    }
-    else {
-      vert = true;
-      g = wl / numChannels * gapRatio;
-      wc = (wl - g*(numChannels - 1)) / numChannels ;
-      hc = hl;
-    }
+    float gs = 4;
+    float xs = xl + gs;
+    float ys = yl + gs;
+    float ws = wl - 2*gs;
+    float hs = hl - 2*gs;
+    float g = 4;
+    float wc = (ws - g*(numChannels+1)) / numChannels;
+    float hc = hs;
+    strokeWeight(2);
+    stroke( 0 , 0 , 0.5 );
+    noFill();
+    rect( xs , ys , ws , hs , 5 , 5 , 5 , 5 );
     // draw the channels
     for( int i = 0 ; i < numChannels ; i++ ) {
-      if( !vert ) { cl[i].drawMin( xl , yl + i*(hc + g) , wc , hc ); }
-      else        { cl[i].drawMin( xl + i*(wc + g) , yl , wc , hc ); }
+      cl[i].drawMin2( xs + i*(wc + g) + g , ys , wc , hc );
     }
     // draw the cursor
     stroke( this.cursorColor );
-    strokeWeight( 1 );
-    if( !vert ) { line( xl + wl*mt , yl , xl + wl*mt , yl + hl ); }
-    else        { line( xl , yl + hl*mt , xl + wl , yl + hl*mt ); }
+    strokeWeight( 2 );
+    line( xs , ys + hs*mt , xs + ws , ys + hs*mt );
+    
   }
  
   
@@ -193,7 +190,24 @@ class Loop {
     for( int i = 0 ; i < numChannels ; i++ ) {
       cl[i].evolve( tIn );
     }
+    updateChannels();
   } // end of METHOD: evolve /////////////////////////////////////////////////////
+  
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: updateChannels                                                       
+  //     Sets channel colors based on PB
+  ///////////////////////////////////////////////////////////////////////////////
+  void updateChannels() {
+    for( int i = 0 ; i < numChannels ; i++ ) {
+      cl[i].fillColorOn = color( PB.channels[i].h , PB.channels[i].s , PB.channels[i].v );
+      cl[i].fillColorOff = color( PB.channels[i].h , 0.5*PB.channels[i].s , 0.5*PB.channels[i].v );
+      cl[i].lineColorOn = color( PB.channels[i].h , 1 , 1 );
+      cl[i].lineColorOff = color( PB.channels[i].h , 0.5 , 0.5 );
+      cl[i].type = PB.channels[i].type;
+      cl[i].l = PB.channels[i].l;
+      cl[i].on = PB.channelOn[i];
+    }
+  }
 }
 
 
@@ -204,7 +218,8 @@ class Loop {
 ////////////////////////////////////////////////////////////////////////////////////////////
 class ChannelLoop {
   // FIELDS ///////////////////////////////////////////////////////////////////////
-  String type;                        // type of ChannelLoop ("OnOff" or "Timed")
+  int type;                           // 0 = onOff , 1 = timed 
+  int l;                              // [0,4]: 0=whole, 1=half, 2=quarter, 3=eight, 4=sixteenth
   Metronome M;                        // Metronome class instance associated with this ChannelLoop
   int ch;                             // channel
   ArrayList<Event> events;            // List of Events
@@ -236,7 +251,7 @@ class ChannelLoop {
   color fillColorOff;                 // color of fill in draw box (when off)
   
   // CONSTRUCTOR ////////////////////////////////////////////////////////////////
-  ChannelLoop( Metronome Min , String typeIn , int chIn) {
+  ChannelLoop( Metronome Min , int typeIn , int chIn) {
     this.type = typeIn;
     this.M = Min;
     this.ch = chIn;
@@ -285,6 +300,8 @@ class ChannelLoop {
   }
    
   
+  
+  
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: drawMin                                                       
   //     draws the loop to the screen
@@ -297,10 +314,10 @@ class ChannelLoop {
     boolean vert;
     if( wc < hc ) {
       vert = true;
-      strokeWeight( wc );
+      strokeWeight( 4 );
     } else {
       vert = false;
-      strokeWeight( hc );
+      strokeWeight( 4 );
     }
     // set the background color
     if( this.on ) { stroke( this.bgColorOn ); } 
@@ -308,11 +325,18 @@ class ChannelLoop {
     // draw the background
     if( !vert ) { line( xc , yc + 0.5*hc , xc + wc , yc + 0.5*hc ); }
     else        { line( xc + 0.5*wc , yc , xc + 0.5*wc , yc + hc ); }
+    if( wc < hc ) {
+      vert = true;
+      strokeWeight( wc );
+    } else {
+      vert = false;
+      strokeWeight( hc );
+    }
     // set the event color
     if( this.on ) { stroke( this.fillColorOn ); } 
     else          { stroke( this.fillColorOff ); }
     // draw the events - TYPE: "OnOff"
-    if( type == "OnOff" && events.size() > 0 ) {
+    if( type == 0 && events.size() > 0 ) {
       // if the first event is an Off, draw event from start to it
       if( !events.get( 0 ).on ) {
         if( !vert ) { line( xc , yc + 0.5*hc , xc + wc*events.get(0).t , yc + 0.5*hc ); }
@@ -341,7 +365,7 @@ class ChannelLoop {
       }
     }
     // draw the events - TYPE: "Timed"
-    if( type == "Timed" && events.size() > 0 ) {
+    if( type == 1 && events.size() > 0 ) {
       // for each event...
       for( int i = 0 ; i < events.size() ; i++ ) {
         // get t1, measureTime for the event
@@ -368,7 +392,95 @@ class ChannelLoop {
     }
   }
 
-  
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: drawMin2                                                       
+  //     draws the loop to the screen
+  ///////////////////////////////////////////////////////////////////////////////
+  void drawMin2( float xc , float yc , float wc , float hc ) {
+    noFill();
+    strokeCap( SQUARE );
+    // draw the background line
+    if( this.on ) { stroke( this.bgColorOn ); } 
+    else          { stroke( this.bgColorOff ); }
+    strokeWeight( 4 );
+    line( xc + 0.5*wc , yc , xc + 0.5*wc , yc + hc );
+    
+    // set colors for event drawing
+    if( this.on ) {
+      stroke( lineColorOn );
+      fill( fillColorOn );
+    } else {
+      stroke( lineColorOff );
+      fill( fillColorOff );
+    }
+    strokeWeight(1);
+    
+    // draw the events - TYPE: "OnOff"
+    if( type == 0 && events.size() > 0 ) {
+      // if the first event is an Off, draw event from start to it
+      if( !events.get( 0 ).on ) {
+        rect( xc , yc , wc , hc*events.get(0).t );
+      }
+      // if the last event is an ON, draw event from it to end
+      int last = events.size() - 1;
+      if( events.get(last).on ) {
+        rect( xc , yc + hc*events.get(last).t , wc , hc - hc*events.get(last).t );
+      }
+      // if there are at least two events, draw lines between them
+      if( events.size() > 1 ) {
+        // for each pair of events
+        for( int i = 0 ; i < events.size() - 1 ; i++ ) {
+          // only draw if first event is On and second is Off
+          if( events.get(i).on && !events.get(i+1).on ) {
+            // get t1 and t2, measureTimes for the events
+            float t1 = events.get(i).t;
+            float t2 = events.get(i+1).t;
+            // draw the On event
+            rect( xc , yc + hc*t1 , wc , hc*( t2 - t1 ) );
+          }
+        }
+      }
+    }
+    
+    // draw the events - TYPE: "Timed"
+    if( type == 1 && events.size() > 0 ) {
+      // for each event...
+      for( int i = 0 ; i < events.size() ; i++ ) {
+        // set colors for event drawing
+        if( this.on ) {
+          stroke( lineColorOn );
+          fill( fillColorOn );
+        } else {
+          stroke( lineColorOff );
+          fill( fillColorOff );
+        }
+        // get t1 (start) and t2 (end)
+        float t1 = events.get(i).t;
+        float t2 = t1;
+        if( l == 0 ) { t2 += 1; }
+        if( l == 1 ) { t2 += 0.5; }
+        if( l == 2 ) { t2 += 0.25; }
+        if( l == 3 ) { t2 += 0.125; }
+        if( l == 4 ) { t2 += 0.0625; }
+        println( l );
+        // check whether t2 wraps to next measure
+        if( t2 > 1 ) {
+          // t2 is in next measure
+          // draw from t1 to end
+          rect( xc , yc + hc*t1 , wc , hc - hc*t1 );
+          // draw from beginning to t2
+          rect( xc , yc , wc , hc*(t2-1) );
+        } else {
+          // t2 is in this measure. draw event
+          rect( xc , yc + hc*t1 , wc , hc*( t2 - t1 ) );
+        }
+        // draw a white line at start of event
+        stroke( 0 , 0 , 1 );
+        line( xc , yc + hc*t1 , xc + wc , yc + hc*t1 );
+      }
+    }
+    
+  }
   
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: print                                                       
@@ -455,7 +567,7 @@ class ChannelLoop {
     }
     
     // TYPE: OnOff
-    if( type == "OnOff" ) {
+    if( type == 0 ) {
       // only evolve if Metronome's beat has been established, and loop is not full
       if( M.beatEstablished && !full ) {
         // check status of resetTriggered
@@ -530,7 +642,7 @@ class ChannelLoop {
     
     // TYPE: "Timed"
     // only evolve if Metronome's beat is established
-    if( type == "Timed" ) {
+    if( type == 1 ) {
       if( this.M.beatEstablished ) {
         // check status of resetTriggered
         if( true ) {
@@ -677,32 +789,32 @@ class ChannelLoop {
     float t = tIn % 1;
     // if the event list is empty, add to list position 0
     if( events.size() == 0 ) {
-      events.add( 0 , new Event( type , onIn , t , ch ) );
+      events.add( 0 , new Event( type , l , onIn , t , ch ) );
     } else {
       // if the arrayList is not empty...
       // if the arraylist has only one Event, add this Event before or after, as appropriate
       if( events.size() == 1 ) {
         if( t < events.get(0).t ) {
-          events.add( 0 , new Event( type , onIn , t , ch ) );
+          events.add( 0 , new Event( type , l , onIn , t , ch ) );
         } else if( t > events.get(0).t ) {
-          events.add( 1 , new Event( type , onIn , t , ch ) );
+          events.add( 1 , new Event( type , l , onIn , t , ch ) );
         }
       } else {
         // the event list must have more than one entry
         // check if new Event belongs at the beginning
         if( tIn < events.get(0).t ) {
-          events.add( 0 , new Event( type,  onIn , t , ch ) );
+          events.add( 0 , new Event( type , l ,  onIn , t , ch ) );
         }
         // check if new Event belongs at the end
         else if( tIn > events.get( events.size() - 1 ).t ) {
-          events.add( events.size() , new Event( type , onIn , t , ch ) );
+          events.add( events.size() , new Event( type , l , onIn , t , ch ) );
         }
         else {
           // the event belongs somewhere in the middle of the list
           for( int i = 0 ; i < events.size() - 1 ; i++ ) {
             // parse through consecutive pairs, and find where the event belongs
             if( tIn > events.get(i).t && tIn < events.get(i+1).t ) {
-              events.add( i+1 ,  new Event( type , onIn , t , ch ) );
+              events.add( i+1 ,  new Event( type , l , onIn , t , ch ) );
             }
           }
         }
@@ -719,7 +831,7 @@ class ChannelLoop {
 
 // createChannelLoop
 ChannelLoop createChannelLoop(  Metronome Min ,      // Metronome
-                                String typeIn,       // type
+                                int typeIn,       // type
                                 int chIn,            // channel
                                 color lineColorOnIn,  // colors
                                 color lineColorOffIn,
@@ -748,7 +860,7 @@ ChannelLoop createOnOffChannelLoop( Metronome Min ,      // Metronome
                                     color fillColorOnIn,
                                     color fillColorOffIn
                                     ) {
-  ChannelLoop clOut =  new ChannelLoop( Min , "Timed" , chIn );
+  ChannelLoop clOut =  new ChannelLoop( Min , 1 , chIn );
   clOut.lineColorOn = lineColorOnIn;
   clOut.lineColorOff = lineColorOffIn;
   clOut.bgColorOn = bgColorOnIn;
@@ -767,7 +879,7 @@ ChannelLoop createTimedChannelLoop( Metronome Min ,      // Metronome
                                     color fillColorOnIn,
                                     color fillColorOffIn
                                     ) {
-  ChannelLoop clOut =  new ChannelLoop( Min , "Timed" , chIn );
+  ChannelLoop clOut =  new ChannelLoop( Min , 1 , chIn );
   clOut.lineColorOn = lineColorOnIn;
   clOut.lineColorOff = lineColorOffIn;
   clOut.bgColorOn = bgColorOnIn;
@@ -786,14 +898,16 @@ ChannelLoop createTimedChannelLoop( Metronome Min ,      // Metronome
 
 class Event {
   // FIELDS //////////////////////////////////
-  String type;            // type: "OnOff" or "Timed"
+  int type;              // type: 0 = onOff , 1 = timed 
+  int l;                 // [0,4]: 0=whole, 1=half, 2=quarter, 3=eight, 4=sixteenth
+                         // defaults to 0 if type is onOff(0)
   boolean on;            // is Event on-type?
   float t;               // time of event
   int ch;                // channel 
   
   
   // CONSTRUCTOR /////////////////////////////
-  Event( String typeIn , boolean onIn , float tIn , int chIn ) {
+  Event( int typeIn , int lIn , boolean onIn , float tIn , int chIn ) {
     this.type = typeIn;
     this.on = onIn;
     this.t = tIn;
@@ -803,8 +917,8 @@ class Event {
   Event( String in ) {
     int data[];
     data = int(split(in, ' '));
-    if( data[0] == 0 ) { this.type = "OnOff"; }
-    if( data[0] == 1 ) { this.type = "Timed"; }
+    if( data[0] == 0 ) { this.type = 0; }
+    if( data[0] == 1 ) { this.type = 1; }
     if( data[1] == 0 ) { this.on = false; }
     if( data[1] == 1 ) { this.on = true; }
     this.t = 0.00000001*float( data[2] );
@@ -816,7 +930,7 @@ class Event {
   //     returns a clone of the Event
   ///////////////////////////////////////////////////////////////////////////////
   Event clone() {
-    return new Event( type , on , t , ch );
+    return new Event( type , l , on , t , ch );
   }
   
   ///////////////////////////////////////////////////////////////////////////////
@@ -834,8 +948,8 @@ class Event {
   String sendData() {
     // type
     int typeOut = 0;
-    if( type == "OnOff" )   { typeOut = 0; }
-    if( type == "Timed" ) { typeOut = 1; }
+    if( type == 0 )   { typeOut = 0; }
+    if( type == 1 ) { typeOut = 1; }
     // on
     int onOut = 0;
     if( !on ) { onOut = 0; }

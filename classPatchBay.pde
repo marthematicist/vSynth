@@ -13,6 +13,7 @@ class PatchBay {
                              // synths[8:15] are type Timed
   int[] channelPatches;      // array[8] of int
                              // for each channel, the synth that is patched
+  boolean[] channelOn;       // for each channel, is it on (loop)
   
   // CONSTRUCTOR ///////////////////////////////////////////////////////////////
   PatchBay() {
@@ -21,6 +22,7 @@ class PatchBay {
     this.channels = new Patch[8];
     this.synths = new Patch[16];
     this.channelPatches = new int[8];
+    this.channelOn = new boolean[8];
     for( int i = 0 ; i < 8 ; i++ ) {
       // initialize OnOff synths
       this.synths[i] = new Patch( 0 );
@@ -28,12 +30,13 @@ class PatchBay {
       this.synths[i+8] = new Patch( 1 );
       // initialize channels (will be over-written in next loop)
       this.channels[i] = new Patch( 0 );
+      this.channelOn[i] = true;
     }
     for( int i = 0 ; i < 4 ; i++ ) {
       // patch synths[0-3] to channels[0-3]
       this.channels[i].patchIn( this.synths[i] );
       this.channelPatches[i] = i;
-      // patch synths[8-11] to channels[4-8]
+      // patch synths[81] to channels[4-8]
       this.channels[i+4].patchIn( this.synths[i+8] );
       this.channelPatches[i+4] = i+8;
     }
@@ -79,6 +82,14 @@ class PatchBay {
     }
     
   }
+  
+  ///////////////////////////////////////////////////////////////////////////////
+  // METHOD: triggerToggle                                                       
+  //     Toggles On flag
+  ///////////////////////////////////////////////////////////////////////////////
+  void triggerToggle( int c ) {
+    channelOn[c] = !channelOn[c];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,10 +118,10 @@ class Patch {
   
   Patch( int typeIn  ) {
     this.type = typeIn;
-    this.h = random(0,180);
+    this.h = random(0,1);
     this.s =  random(0.8,1);
     this.v = random(0.8,1);
-    this.a = 255;
+    this.a = 1;
     if( type == 0 ) { this.l = 0; }
     if( type == 1 ) { this.l = 2; }
   }

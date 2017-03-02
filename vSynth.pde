@@ -28,6 +28,7 @@ SynthAdjuster SA;
 PatchBay PB;
 PatchSelector PS;
 ChannelSelector CS;
+Patcher Per;
 
 
 void setup() {
@@ -39,23 +40,24 @@ void setup() {
   yC = 0.5*yRes;
   d = yRes;
   
-  colorMode( HSB , 360 , 1 , 1 , 255 );
+  colorMode( HSB , 1 , 1 , 1 , 1 );
 
   M = new Metronome();
-  L = loopSetup( M );
+  PB = new PatchBay();
+  SA = new SynthAdjuster( PB , 160 , 0 , 640 , 160 );
+  PS = new PatchSelector( PB , 160 , 160 , 640 , 160 , -1 );
+  CS = new ChannelSelector( PB , 160 , 360 , 640 , 160 , 0 );
+  L = loopSetup( M , PB );
+  Per = new Patcher( PB , L , 160 , 320 , 640 , 40 );
   OH = new OutputHandler( M , L );
   IH = new InputHandler( M , L  , OH);
   s = new Server(this, 12345);
-  PB = new PatchBay();
-  SA = new SynthAdjuster( PB , 160 , 0 , 640 , 160 );
   
-  PS = new PatchSelector( PB , 160 , 160 , 640 , 160 , -1 );
-  CS = new ChannelSelector( PB , 160 , 360 , 640 , 160 , 0 );
   
   synthColors = new color[24];
   synthActive = new boolean[24];
   for( int i = 0 ; i < 24 ; i++ ) {
-    synthColors[i] = color( random(0,360) , 1 , 1 );
+    synthColors[i] = color( random(0,1) , 1 , 1 );
     synthActive[i] = false;
   }
   synthActive[ floor( random(0,16) ) ] = true;
@@ -79,6 +81,7 @@ void draw() {
   SA.evolve( mx , my );
   CS.evolve();
   PS.evolve();
+  Per.evolve();
   
   // get events from Loop
   // send all events to client
@@ -95,8 +98,8 @@ void draw() {
   // draw
   background(0, 0, 0 );
   //M.draw();
-  L.drawMin( t , 0 , 160 , xRes*0.2 , 240 , 0.1 );
-  drawRecordButton( 0.0*xRes , 0 , 0.2*xRes , 160 );
+  L.drawMin( t , 0 , 160 , xRes*0.2 , 280 , 0.1 );
+  //drawRecordButton( 0.0*xRes , 0 , 0.2*xRes , 160 );
   //drawChannelButtons( 0.2*xRes , 400 , 0.8*xRes , 80 );
   //drawChannelButtons( 0.2*xRes , 320 , 0.8*xRes , 80 );
   //drawChannelButtons( 0.2*xRes , 240 , 0.8*xRes , 80 );
@@ -108,10 +111,11 @@ void draw() {
   SA.draw();
   PS.draw();
   CS.draw();
+  Per.draw();
   //println( PB.selected );
   //println( C.print() );
   mtLast = mt;
-  println( frameRate );
+  //println( frameRate );
 }
 
 
@@ -121,6 +125,7 @@ void mousePressed() {
   SA.triggerInput( mouseX , mouseY );
   PS.triggerInput( mouseX , mouseY );
   CS.triggerInput( mouseX , mouseY );
+  Per.triggerInput( mouseX , mouseY );
 }
 
 void mouseReleased() {

@@ -94,10 +94,12 @@ class ChannelSelector{
     pValue = value;
     for( int i = 0 ; i < 8 ; i++ ) {
       if( mx >= sx + i*pw && mx < sx + (i+1)*pw ) {
-        if( my >= sy && my < sy + ph ) { value = i; }
+        if( my >= sy && my < sy + sh ) { 
+          value = i; 
+          P.setSelected( value );
+        }
       }
     }
-    P.setSelected( value );
   }
   
   ///////////////////////////////////////////////////////////////////////////////

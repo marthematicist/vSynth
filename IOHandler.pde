@@ -70,12 +70,12 @@ class InputHandler {
           if( on ) { L.triggerInput(i); }
           else     { L.clearInput(i); }
           // send an Event to the outputHandler
-          OH.addEvent( new Event( L.cl[i].type , on , M.measureTime( t ) , i ) );
+          OH.addEvent( new Event( L.cl[i].type , L.cl[i].l , on , M.measureTime( t ) , i ) );
         } else {
           // loop is not recording, but if the channel is on, send an Event to the outputHandler
           if( L.cl[i].on ) {
             // send an Event to the outputHandler
-            OH.addEvent( new Event( L.cl[i].type , on , M.measureTime( t ) , i ) );
+            OH.addEvent( new Event( L.cl[i].type , L.cl[i].l , on , M.measureTime( t ) , i ) );
           }
         }
       }
@@ -89,14 +89,14 @@ class InputHandler {
             // if meta is on, clear the channel, and send an off event to outputHandler
             L.triggerReset(i);
             // send an off event to the output 
-            OH.addEvent( new Event( L.cl[i].type , false , M.measureTime( t ) , i ) );
+            OH.addEvent( new Event( L.cl[i].type , L.cl[i].l , false , M.measureTime( t ) , i ) );
           } else {
             // if meta is not on, trigger the channel toggle
-            L.triggerToggle(i);
+            PB.triggerToggle(i);
             // if the channel just turned off, send an off event to the outputHandler
             if( !L.cl[i].on ) {
               // send an off event to the output 
-              OH.addEvent( new Event( L.cl[i].type , false , M.measureTime( t ) , i ) );
+              OH.addEvent( new Event( L.cl[i].type , L.cl[i].l , false , M.measureTime( t ) , i ) );
             }
           }
         }
