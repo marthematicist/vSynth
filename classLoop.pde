@@ -3,7 +3,8 @@ Loop loopSetup( Metronome Min , PatchBay PBin) {
   // initialize Loop
   int numChannels = 8;              // number of channels
   color cursorColor = color( 0.1667 , 1 , 1 );
-  Loop Lout = new Loop( numChannels , Min , PBin , cursorColor );
+  color cursorColorRecording = color( 0  , 1 , 1 );
+  Loop Lout = new Loop( numChannels , Min , PBin , cursorColor , cursorColorRecording );
   
   // set type
   int[] types = { 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
@@ -45,14 +46,18 @@ class Loop {
   Metronome M;                  // Metronome attached to instance
   PatchBay PB;
   color cursorColor;            // color of draw cursor
+  color cursorColorRecording;   // cursor color when recording
+  boolean recording;
   
   Loop( int n , Metronome Min , PatchBay PBin, 
-        color cursorColorIn ) {
+        color cursorColorIn  , color cursorColorRecordingIn) {
     this.numChannels = n;
     this.cl = new ChannelLoop[ this.numChannels ];
     this.M = Min;
     this.PB = PBin;
     this.cursorColor = cursorColorIn;
+    this.cursorColorRecording = cursorColorRecordingIn;
+    this.recording = false;
   }
   
   ///////////////////////////////////////////////////////////////////////////////
@@ -125,7 +130,8 @@ class Loop {
       cl[i].drawMin( xs + i*(wc + g) + g , ys , wc , hc );
     }
     // draw the cursor
-    stroke( this.cursorColor );
+    if( recording ) { stroke( this.cursorColorRecording ); }
+    else { stroke( this.cursorColor ); }
     strokeWeight( 2 );
     line( xs , ys + hs*mt , xs + ws , ys + hs*mt );
     
