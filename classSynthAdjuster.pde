@@ -126,13 +126,15 @@ class SynthAdjuster {
     if ( drawTriggered ) {
       //println( "drawing SynthAdjuster " + frameCount );
       drawTriggered = false;
-      int N = 32;
-      int M = 16;
-      float amt = 1.08;
-      float w0 = HSL.sw / float(N);
-      float h3 = ASL.sh / float(N);
-      float svw = SVP.sw / float(N);
-      float svh = SVP.sh / float(M);
+      int HN = 40;
+      int SN = 16;
+      int VN = 12;
+      int AN = 8;
+      float amt = 1.05;
+      float wH = HSL.sw / float(HN);
+      float hA = ASL.sh / float(AN);
+      float svw = SVP.sw / float(SN);
+      float svh = SVP.sh / float(VN);
       noStroke();
       fill( 0 , 0 , 0 );
       rect( x , y , w , h );
@@ -140,15 +142,21 @@ class SynthAdjuster {
       textAlign( CENTER , CENTER );
       textSize( 10 );
       text( "A\nL\nP\nH\nA" , ASL.sx + 0.5*ASL.sw , ASL.sy + 0.47*ASL.sh );
-      for ( int i = 0; i < N; i++ ) {
-        float a = float(i) / float(N);
+      for ( int i = 0; i < HN; i++ ) {
+        float a = float(i) / float(HN);
         fill( a, 1, 1 );
-        rect( HSL.sx + i*w0, HSL.sy + 0.35*HSL.sh, w0*amt, 0.3*HSL.sh );
+        rect( HSL.sx + i*wH, HSL.sy + 0.35*HSL.sh, wH*amt, 0.3*HSL.sh );
+      }
+      for ( int i = 0; i < AN; i++ ) {
+        float a = float(i) / float(AN);
         fill( H, S, V , (1-a) );
-        rect( ASL.sx + 0.35*ASL.sw, ASL.sy +  i*h3, 0.3*ASL.sw , h3*amt );
-        //rect( ASL.sx + i*w3, ASL.sy + 0.35*ASL.sh, w3, 0.3*ASL.sh );
-        for( int m = 0 ; m < M ; m++ ) {
-          float b = float(m) / float(M);
+        rect( ASL.sx + 0.35*ASL.sw, ASL.sy +  i*hA, 0.3*ASL.sw , hA );
+      }
+      for ( int i = 0; i < SN; i++ ) {
+        float a = float(i) / float(SN);
+        
+        for( int m = 0 ; m < VN ; m++ ) {
+          float b = float(m) / float(VN);
           fill( H , a , 1-b );
           rect( SVP.sx + i*svw , SVP.sy + m*svh , svw*amt , svh*amt );
         }

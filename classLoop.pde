@@ -114,7 +114,7 @@ class Loop {
     float wc = (ws - g*(numChannels+1)) / numChannels;
     float hc = hs;
     noStroke();
-    fill( 0 , 0 , 0 );
+    fill( 0 , 0 , 0 , 0.1 );
     rect( xl , yl , wl , hl );
     strokeWeight(2);
     stroke( 0 , 0 , 0.5 );
