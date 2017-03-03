@@ -41,6 +41,7 @@ void setup() {
   d = yRes;
   
   colorMode( HSB , 1 , 1 , 1 , 1 );
+  background(0, 0, 0 );
 
   M = new Metronome();
   PB = new PatchBay();
