@@ -102,7 +102,7 @@ class Patcher{
   ///////////////////////////////////////////////////////////////////////////////
   void draw() {
     if( drawTriggered ) {
-      println( "drawing Patcher" );
+      //println( "drawing Patcher" );
       drawTriggered = false;
       fill( 0 , 0 , 0 );
       noStroke();

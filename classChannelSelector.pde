@@ -119,7 +119,7 @@ class ChannelSelector{
       P.channelRedraw = false;
     }
     if( drawAllTriggered ) {
-      println( "drawing ChannelSelector" );
+      //println( "drawing ChannelSelector" );
       drawAllTriggered = false;
       float cr = 10;
       fill( 0 , 0 , 0 );

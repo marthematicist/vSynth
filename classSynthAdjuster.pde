@@ -124,7 +124,7 @@ class SynthAdjuster {
   ///////////////////////////////////////////////////////////////////////////////
   void draw( ) {
     if ( drawTriggered ) {
-      println( "drawing SynthAdjuster " + frameCount );
+      //println( "drawing SynthAdjuster " + frameCount );
       drawTriggered = false;
       int N = 32;
       int M = 16;

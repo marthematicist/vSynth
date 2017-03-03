@@ -121,7 +121,7 @@ class PatchSelector{
       P.synthRedraw = false;
     }
     if( drawAllTriggered ) {
-      println( "drawing PatchSelector" );
+      //println( "drawing PatchSelector" );
       drawAllTriggered = false;
       float cr = 10;
       fill( 0 , 0 , 0 );
