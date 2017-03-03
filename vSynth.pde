@@ -112,7 +112,7 @@ void draw() {
   PS.draw();
   CS.draw();
   Per.draw();
-  //println( PB.selected );
+  //println( "selected: " + PB.selected + "   prevSelected: " + PB.prevSelected  );
   //println( C.print() );
   mtLast = mt;
   //println( frameRate );

@@ -15,6 +15,9 @@ class PatchBay {
                              // for each channel, the synth that is patched
   boolean[] channelOn;       // for each channel, is it on (loop)
   boolean[] drawTrigger;     // array of flags to trigger element redraw: channel[0-7] , synth[8-23]
+  boolean newSelection;      // flag that gets set when a new selection is made (cleared by SynthAdjuster)
+  boolean synthRedraw;       // trigger to redraw synths
+  boolean channelRedraw;     // trigger to redraw channels
   
   
   // CONSTRUCTOR ///////////////////////////////////////////////////////////////
@@ -26,6 +29,9 @@ class PatchBay {
     this.channelPatches = new int[8];
     this.channelOn = new boolean[8];
     this.drawTrigger = new boolean[24];
+    this.newSelection = true;
+    this.synthRedraw = true;
+    this.channelRedraw = true;
     for( int i = 0 ; i < 8 ; i++ ) {
       // initialize OnOff synths
       this.synths[i] = new Patch( 0 );
@@ -47,6 +53,7 @@ class PatchBay {
       this.channelPatches[i+4] = i+8;
     }
   }
+  
   
   ///////////////////////////////////////////////////////////////////////////////
   // METHOD: triggerDrawSynth                                                   
@@ -96,8 +103,13 @@ class PatchBay {
   //     sets selected to input ind
   ///////////////////////////////////////////////////////////////////////////////
   void setSelected( int ind ) {
+    newSelection = true;
     prevSelected = selected;
     selected = ind;
+    //if( prevSelected < 8 && selected >=8 || prevSelected >=8 && selected < 8 ) {
+      synthRedraw = true;
+      channelRedraw = true;
+   // }
   }
   
   ///////////////////////////////////////////////////////////////////////////////
@@ -108,6 +120,7 @@ class PatchBay {
   void patchSelectedToChannel( int channelIndex ) {
     if( selected > 7 ) {
       channels[channelIndex].patchIn( synths[selected-9] );
+      channelRedraw = true;
     }
   }
   

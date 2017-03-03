@@ -31,7 +31,7 @@ class SynthAdjuster {
     this.ASL = new VSlider( x + 7.0/16*w, y + 0*h/3, 1.0/16*w, 3*h/3, 1 - P.channels[P.selected].a );
     this.LS = new LengthSelector( P , x + 0.5*w , 2*h/3 , 0.5*w , h/3 , P.channels[P.selected].l );
     this.SVP = new SVPicker( x, h/3, 7.0/16*w, 2*h/3, P.channels[P.selected].s , 1 - P.channels[P.selected].v );
-    this.drawTriggered = false;
+    this.drawTriggered = true;
     setHSVAL();
   }
   ///////////////////////////////////////////////////////////////////////////////
@@ -95,11 +95,11 @@ class SynthAdjuster {
       drawTriggered = true;
       setHSVAL();
     }
-    if( P.selected != P.prevSelected ) {
+    if( P.newSelection ) {
+      P.newSelection = false;
       drawTriggered = true;
       if( P.selected < 8 ) {
         // channel 0-8
-        println( P.selected );
         S = P.channels[P.selected].s;
         V = P.channels[P.selected].v;
         A = P.channels[P.selected].a;
@@ -123,7 +123,8 @@ class SynthAdjuster {
   // METHOD: draw                                                       
   ///////////////////////////////////////////////////////////////////////////////
   void draw( ) {
-    if ( true ) {
+    if ( drawTriggered ) {
+      println( "drawing SynthAdjuster " + frameCount );
       drawTriggered = false;
       int N = 32;
       int M = 16;
@@ -153,13 +154,11 @@ class SynthAdjuster {
         }
         
       }
+     HSL.draw();
+     ASL.draw();
+     LS.draw();
+     SVP.draw();
     }
-
-   HSL.draw();
-   ASL.draw();
-
-    LS.draw();
-    SVP.draw();
   }
 }
 

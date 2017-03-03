@@ -73,7 +73,8 @@ class Patcher{
               if( P.channels[i].type != P.synths[P.selected - 8].type ) {
                 L.triggerReset( i );
               }
-              P.channels[i].patchIn( P.synths[P.selected - 8] ); 
+              P.channels[i].patchIn( P.synths[P.selected - 8] );
+              P.channelRedraw = true;
               P.channelPatches[i] = P.selected - 8;
             }
           }
@@ -101,6 +102,7 @@ class Patcher{
   ///////////////////////////////////////////////////////////////////////////////
   void draw() {
     if( drawTriggered ) {
+      println( "drawing Patcher" );
       drawTriggered = false;
       fill( 0 , 0 , 0 );
       noStroke();

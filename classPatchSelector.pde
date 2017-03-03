@@ -111,9 +111,17 @@ class PatchSelector{
   ///////////////////////////////////////////////////////////////////////////////
   void draw() {
     for( int i = 8 ; i < 24 ; i++ ) {
-      if( P.drawTrigger[i] ) { drawAllTriggered = true; }
+      if( P.drawTrigger[i] ) { 
+        P.drawTrigger[i] = false;
+        drawAllTriggered = true; 
+      }
+    }
+    if( P.synthRedraw ) { 
+      drawAllTriggered = true;
+      P.synthRedraw = false;
     }
     if( drawAllTriggered ) {
+      println( "drawing PatchSelector" );
       drawAllTriggered = false;
       float cr = 10;
       fill( 0 , 0 , 0 );

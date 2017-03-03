@@ -109,9 +109,17 @@ class ChannelSelector{
   void draw() {
     
     for( int i = 0 ; i < 8 ; i++ ) {
-      if( P.drawTrigger[i] ) { drawAllTriggered = true; }
+      if( P.drawTrigger[i] ) { 
+        P.drawTrigger[i] = false;
+        drawAllTriggered = true; 
+      }
+    }
+    if( P.channelRedraw ) { 
+      drawAllTriggered = true;
+      P.channelRedraw = false;
     }
     if( drawAllTriggered ) {
+      println( "drawing ChannelSelector" );
       drawAllTriggered = false;
       float cr = 10;
       fill( 0 , 0 , 0 );
